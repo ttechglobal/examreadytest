@@ -6,9 +6,8 @@ import { Input } from '@/components/ui'
 
 const SUBJECTS = ['Physics','Mathematics','Chemistry','Biology','English','Government','History','Economics','Literature']
 const EXAMS = [
-  { id: 'JAMB', sub: 'UTME', desc: 'University entry' },
-  { id: 'WAEC', sub: 'SSCE', desc: 'West African' },
-  { id: 'NECO', sub: 'SSCE', desc: 'National' },
+  { id: 'JAMB', desc: 'University entry', available: true },
+  { id: 'WAEC', desc: 'Coming soon', available: false },
 ]
 
 export default function SetupInner() {
@@ -74,23 +73,26 @@ export default function SetupInner() {
           {/* Exam type */}
           <div className="mb-7">
             <p className="text-[13px] font-bold text-dark mb-3">Which exam are you preparing for?</p>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               {EXAMS.map(e => (
                 <button
                   key={e.id}
                   type="button"
-                  onClick={() => setExamType(e.id)}
-                  className={`relative border-[1.5px] rounded-xl p-3 text-center cursor-pointer transition-all duration-150 active:scale-[.97]
-                    ${examType === e.id
-                      ? 'border-brand bg-brand-light scale-[1.02]'
-                      : 'border-slate-200 bg-white hover:border-brand/40 hover:bg-brand-light/30'}`}
+                  onClick={() => e.available && setExamType(e.id)}
+                  disabled={!e.available}
+                  className={`relative border-[1.5px] rounded-xl p-3 text-center transition-all duration-150
+                    ${!e.available
+                      ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
+                      : examType === e.id
+                        ? 'border-brand bg-brand-light scale-[1.02] cursor-pointer active:scale-[.97]'
+                        : 'border-slate-200 bg-white hover:border-brand/40 hover:bg-brand-light/30 cursor-pointer active:scale-[.97]'}`}
                 >
                   {examType === e.id && (
                     <span className="absolute top-2 right-2 w-4 h-4 bg-brand rounded-full flex items-center justify-center">
                       <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </span>
                   )}
-                  <p className={`text-[17px] font-black ${examType === e.id ? 'text-brand' : 'text-dark'}`}>{e.id}</p>
+                  <p className={`text-[17px] font-black ${examType === e.id ? 'text-brand' : e.available ? 'text-dark' : 'text-muted'}`}>{e.id}</p>
                   <p className="text-[10px] text-muted mt-0.5">{e.desc}</p>
                 </button>
               ))}

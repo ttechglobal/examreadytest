@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { getSessions, clearSessions } from '@/lib/storage/sessions'
-import { formatDate } from '@/lib/utils/format'
+import { formatDate, formatTimeAgo } from '@/lib/utils/format'
 import { getReadiness } from '@/lib/utils/constants'
 
 // ─── Scroll reveal ────────────────────────────────────────────
@@ -223,15 +223,11 @@ const FEATURES = [
 ]
 
 const EXAMS = [
-  { id: 'JAMB', name: 'Joint Admissions & Matriculation Board', color: '#2D3CE6', bg: '#EEF0FE', desc: 'The university entrance exam sat by over a million Nigerian students every year.', pct: 92 },
-  { id: 'WAEC', name: 'West African Examinations Council',       color: '#16A34A', bg: '#DCFCE7', desc: 'Senior Secondary Certificate Examination for West African students.', pct: 88 },
-  { id: 'NECO', name: 'National Examinations Council',           color: '#D97706', bg: '#FEF3C7', desc: 'Nigerian national alternative to WAEC, widely accepted by universities.', pct: 76 },
+  { id: 'JAMB', name: 'Joint Admissions & Matriculation Board', color: '#2D3CE6', bg: '#EEF0FE', desc: 'The university entrance exam sat by over a million Nigerian students every year.', status: 'available' },
+  { id: 'WAEC', name: 'West African Examinations Council',       color: '#94A3B8', bg: '#F8FAFC', desc: 'WAEC past questions and analysis — coming soon.', status: 'coming-soon' },
 ]
 
-const AVATAR_DATA = [
-  { init: 'CO', color: '#2D3CE6' }, { init: 'AM', color: '#6DC77A' },
-  { init: 'TE', color: '#F59E0B' }, { init: 'OB', color: '#8B5CF6' }, { init: 'FK', color: '#EC4899' },
-]
+
 
 
 // ─── Community section ────────────────────────────────────────
@@ -281,7 +277,7 @@ function CommunitySection({ mw }) {
             Students helping students
           </h2>
           <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 16, color: '#52525B', marginBottom: 32, maxWidth: 480 }}>
-            Connect with thousands preparing for JAMB, WAEC, and NECO. Share tips, ask questions, see how others are doing.
+            Connect with thousands preparing for JAMB and WAEC. Share tips, ask questions, see how others are doing.
           </p>
         </Reveal>
 
@@ -289,7 +285,7 @@ function CommunitySection({ mw }) {
           {/* Room cards + recent feed */}
           <div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-              {['jamb','waec','neco'].map(r => (
+              {['jamb','waec'].map(r => (
                 <Link key={r} href={`/community/${r}`}
                   style={{ flex: 1, textAlign: 'center', padding: '12px 0', border: `1.5px solid ${roomColors[r]}33`, borderRadius: 12, background: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 15, color: roomColors[r], textDecoration: 'none', transition: 'all 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.background = roomBgs[r] }}
@@ -349,7 +345,6 @@ function CommunitySection({ mw }) {
                     style={{ fontFamily: 'Nunito, sans-serif', fontSize: 13, border: '1.5px solid #E2E8F0', borderRadius: 8, padding: '6px 10px', outline: 'none', background: '#fff', cursor: 'pointer' }}>
                     <option value="jamb">JAMB</option>
                     <option value="waec">WAEC</option>
-                    <option value="neco">NECO</option>
                   </select>
                   <input value={name} onChange={e => setName(e.target.value.slice(0, 40))} placeholder="Name (optional)"
                     style={{ flex: 1, minWidth: 120, fontFamily: 'Nunito, sans-serif', fontSize: 13, border: '1.5px solid #E2E8F0', borderRadius: 8, padding: '6px 10px', outline: 'none' }}/>
@@ -392,10 +387,15 @@ export default function LandingPage() {
           {/* Left: copy */}
           <div>
             {/* Exam badges */}
-            <div style={{ display: 'flex', gap: 7, marginBottom: 28, flexWrap: 'wrap' }}>
-              {EXAMS.map(e => (
-                <span key={e.id} style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', padding: '4px 12px', borderRadius: 99, background: e.bg, color: e.color }}>{e.id}</span>
-              ))}
+            <div style={{ display: 'flex', gap: 7, marginBottom: 28, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, padding: '5px 14px', borderRadius: 99, background: '#EEF0FD', color: '#2D3CE6', border: '1.5px solid #C5CAF6' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6DC77A', boxShadow: '0 0 0 2px rgba(109,199,122,0.3)', animation: 'pulse-dot 2s infinite', display: 'inline-block' }}/>
+                JAMB
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 12, padding: '5px 14px', borderRadius: 99, background: '#F8F9FA', color: '#94A3B8', border: '1.5px dashed #CBD5E1' }}>
+                WAEC
+                <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.3px', color: '#94A3B8' }}>Soon</span>
+              </span>
             </div>
 
             {/* Headline — large, editorial, two-colour */}
@@ -422,19 +422,10 @@ export default function LandingPage() {
               </a>
             </div>
 
-            {/* Social proof */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex' }}>
-                {AVATAR_DATA.map(({ init, color }, i) => (
-                  <div key={init} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #FAFAFA', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: i > 0 ? -9 : 0, fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 9, color: '#fff', position: 'relative', zIndex: 5 - i }}>
-                    {init}
-                  </div>
-                ))}
-              </div>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#71717A', margin: 0 }}>
-                <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>12,000+</strong> students tested their readiness
-              </p>
-            </div>
+            {/* Trust tagline — honest, no fake stats */}
+            <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, color: '#71717A', margin: 0 }}>
+              Free · No sign-up · Results in minutes
+            </p>
           </div>
 
           {/* Right: illustration */}
@@ -554,31 +545,40 @@ export default function LandingPage() {
           </Reveal>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
-            {EXAMS.map((exam, i) => (
-              <Reveal key={exam.id} delay={i * 80}>
-                <div style={{ background: '#fff', borderRadius: 16, border: `1.5px solid ${exam.color}22`, padding: '28px 28px 24px', position: 'relative', overflow: 'hidden' }}>
-                  {/* Corner accent blob */}
-                  <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: exam.bg, opacity: 0.7 }}/>
-                  {/* Exam label */}
-                  <div style={{ display: 'inline-flex', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: 19, color: exam.color, background: exam.bg, padding: '6px 14px', borderRadius: 8, marginBottom: 18, position: 'relative' }}>
-                    {exam.id}
-                  </div>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{exam.name}</p>
-                  <p style={{ ...body, fontSize: 14, marginBottom: 22 }}>{exam.desc}</p>
-                  {/* Question availability bar */}
-                  <div style={{ marginBottom: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#94A3B8' }}>Question coverage</span>
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, color: '#0A0A0A' }}>{exam.pct}%</span>
+            {EXAMS.map((exam, i) => {
+              const isAvailable = exam.status === 'available'
+              return (
+                <Reveal key={exam.id} delay={i * 80}>
+                  <div style={{ background: isAvailable ? '#fff' : '#FAFAFA', borderRadius: 16, border: `1.5px solid ${isAvailable ? exam.color + '22' : '#E2E8F0'}`, padding: '28px 28px 24px', position: 'relative', overflow: 'hidden', opacity: isAvailable ? 1 : 0.7 }}>
+                    <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: exam.bg, opacity: 0.7 }}/>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                      <div style={{ display: 'inline-flex', fontWeight: 800, fontSize: 19, color: exam.color, background: exam.bg, padding: '6px 14px', borderRadius: 8, position: 'relative' }}>
+                        {exam.id}
+                      </div>
+                      {isAvailable ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, color: '#15803D', background: '#DCFCE7', padding: '3px 10px', borderRadius: 99, border: '1px solid #86EFAC' }}>
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6DC77A', boxShadow: '0 0 0 2px rgba(109,199,122,0.3)', animation: 'pulse-dot 2s infinite', display: 'inline-block' }}/>
+                          Live now
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', background: '#F1F5F9', padding: '3px 10px', borderRadius: 99, border: '1.5px dashed #CBD5E1' }}>
+                          Coming soon
+                        </span>
+                      )}
                     </div>
-                    <div style={{ height: 5, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{ width: `${exam.pct}%`, height: '100%', background: exam.color, borderRadius: 3 }}/>
-                    </div>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{exam.name}</p>
+                    <p style={{ ...body, fontSize: 14, marginBottom: 22 }}>{exam.desc}</p>
+                    {isAvailable ? (
+                      <a href="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#2D3CE6', color: '#fff', fontWeight: 800, fontSize: 13, padding: '9px 18px', borderRadius: 8, textDecoration: 'none' }}>
+                        Start JAMB test →
+                      </a>
+                    ) : (
+                      <span style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>Questions coming soon</span>
+                    )}
                   </div>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, color: exam.color, background: exam.bg, padding: '4px 10px', borderRadius: 99 }}>Available now</span>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -681,7 +681,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, color: '#3F3F46', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 16 }}>Links</p>
-                {[['https://learniie.com','Learniie platform'],['/admin','Admin portal']].map(([h, l]) => (
+                {[['https://learniie.com','learniie.com']].map(([h, l]) => (
                   <div key={l} style={{ marginBottom: 11 }}>
                     <a href={h} style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#71717A', textDecoration: 'none', transition: 'color 0.15s' }}
                       onMouseEnter={e => e.target.style.color = '#fff'} onMouseLeave={e => e.target.style.color = '#71717A'}>{l}</a>

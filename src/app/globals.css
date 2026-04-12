@@ -2,11 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Global font enforcement ──────────────────────────────────
-   Nunito everywhere on student pages.
-   Inter only inside [data-admin="true"].
-   KaTeX fonts always preserved.
-   ─────────────────────────────────────────────────────────── */
+/* ── Global font enforcement ──────────────────────────────────── */
 
 @layer base {
   :root {
@@ -31,15 +27,9 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Catch-all for student pages */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
-  /* All form elements inherit font */
-  input, button, textarea, select, option {
-    font-family: inherit;
-  }
+  input, button, textarea, select, option { font-family: inherit; }
 
   :focus-visible {
     outline: 2px solid #2D3CE6;
@@ -52,29 +42,20 @@
   input[type='number'] { -moz-appearance: textfield; }
 }
 
-/* ── Student pages — explicit Nunito ─────────────────────────── */
-.student-page,
-.student-page * {
+/* ── Student & community pages ──────────────────────────────── */
+.student-page, .student-page *,
+.community-page, .community-page * {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
 
-/* ── Community pages — Nunito ────────────────────────────────── */
-.community-page,
-.community-page * {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-}
-
-/* ── Admin override — Inter ──────────────────────────────────── */
+/* ── Admin override — Inter ─────────────────────────────────── */
 [data-admin="true"],
 [data-admin="true"] * {
   font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── KaTeX — always preserve its own fonts ───────────────────── */
-.katex,
-.katex *,
-.katex-html,
-.katex-html * {
+/* ── KaTeX — always preserve its fonts ─────────────────────── */
+.katex, .katex *, .katex-html, .katex-html * {
   font-family: KaTeX_Main, KaTeX_Math, KaTeX_AMS, serif !important;
 }
 
@@ -91,10 +72,7 @@
     animation: shimmer 1.5s infinite;
     border-radius: 8px;
   }
-  @keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   .card-hover {
     transition: transform var(--duration-base) var(--ease-out),
@@ -107,51 +85,65 @@
 }
 
 @layer utilities {
-  .font-nunito { font-family: var(--font-nunito), 'Nunito', sans-serif; }
-  .font-inter  { font-family: 'Inter', ui-sans-serif, sans-serif; }
+  .font-nunito  { font-family: var(--font-nunito), 'Nunito', sans-serif; }
+  .font-inter   { font-family: 'Inter', ui-sans-serif, sans-serif; }
   .tabular-nums { font-variant-numeric: tabular-nums; }
   .text-balance { text-wrap: balance; }
 }
 
-/* ── MathText rendering ───────────────────────────────────────── */
+/* ── Nunito weight hierarchy ──────────────────────────────────
+   800 = page titles, hero
+   700 = section headings, question text, card titles
+   600 = options, important labels
+   500 = body, explanations
+   400 = captions, metadata
+   ─────────────────────────────────────────────────────────── */
+
+/* ── MathText ─────────────────────────────────────────────── */
 
 .math-text {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
-  line-height: 1.8;
+  line-height: 1.85;
+}
+.math-block { display: block; }
+
+.math-text .katex { font-size: 1.05em; line-height: 1.6; }
+.math-text .katex-display { margin: 12px 0; overflow-x: auto; padding-bottom: 4px; }
+
+/* Bold inside MathText */
+.math-text strong, .explanation-card strong {
+  font-weight: 800;
+  color: #1A1A1A;
 }
 
-.math-block {
-  display: block;
+/* Inline bullet rendered by renderMath */
+.inline-bullet {
+  color: #2D3CE6;
+  font-weight: 800;
+  margin-right: 6px;
 }
 
-/* KaTeX sizing — match surrounding text exactly */
-.math-text .katex {
-  font-size: 1.05em;
-  line-height: 1.6;
+/* Option dash for ❌ wrong options */
+.option-dash {
+  color: #94A3B8;
+  margin-right: 4px;
+  font-weight: 600;
 }
 
-.math-text .katex-display {
-  margin: 12px 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 4px;
+/* Paragraph blocks from renderMath */
+.math-para {
+  margin: 0 0 10px 0;
+  font-family: var(--font-nunito), 'Nunito', sans-serif;
+  line-height: 1.85;
 }
+.math-para:last-child { margin-bottom: 0; }
 
-.math-error {
-  color: #DC2626;
-  background: #FEF2F2;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: monospace !important;
-  font-size: 13px;
-}
-
-/* ── Question text sizing ────────────────────────────────────── */
+/* ── Question + option sizing ─────────────────────────────── */
 
 .question-text {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.85;
   color: #1A1A1A;
   letter-spacing: -0.1px;
@@ -160,12 +152,12 @@
 .option-label {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.7;
   color: #1A1A1A;
 }
 
-/* ── ExplanationCard component styles ────────────────────────── */
+/* ── ExplanationCard ─────────────────────────────────────── */
 
 .explanation-card {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
@@ -212,62 +204,30 @@
   padding: 14px 16px;
   flex: 1;
   font-size: 16px;
-  line-height: 1.8;
+  font-weight: 500;
+  line-height: 1.9;
 }
 
 /* Formula section */
-.formula-section {
-  background: #F0F4FF;
-  border-left: 3px solid #2D3CE6;
-}
+.formula-section { background: #F0F4FF; border-left: 3px solid #2D3CE6; }
 .formula-content { flex: 1; }
 .formula-display {
-  font-size: 20px;
-  font-weight: 700;
-  text-align: center;
-  padding: 16px;
-  background: white;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  border: 1px solid #C7D2FE;
-  overflow-x: auto;
+  font-size: 20px; font-weight: 700; text-align: center;
+  padding: 16px; background: white; border-radius: 10px;
+  margin-bottom: 12px; border: 1px solid #C7D2FE; overflow-x: auto;
 }
-.parameter-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.parameter-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .parameter-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 15px;
-  color: #374151;
-  padding: 5px 0;
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 15px; color: #374151; padding: 5px 0;
   border-bottom: 1px solid #E0E7FF;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
-.parameter-item::before {
-  content: "•";
-  color: #2D3CE6;
-  font-weight: 800;
-  flex-shrink: 0;
-}
+.parameter-item::before { content: "•"; color: #2D3CE6; font-weight: 800; flex-shrink: 0; }
 
 /* Steps */
-.steps-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.step-item { display: flex; gap: 14px; align-items: flex-start; }
+.steps-list { list-style: none; padding: 0; margin: 0; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.step-item  { display: flex; gap: 14px; align-items: flex-start; }
 .step-number {
   width: 30px; height: 30px; border-radius: 50%;
   background: #2D3CE6; color: white;
@@ -276,33 +236,68 @@
   flex-shrink: 0; margin-top: 2px;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
-.step-content { flex: 1; padding-top: 4px; font-size: 16px; line-height: 1.8; }
+.step-content { flex: 1; padding-top: 4px; font-size: 16px; font-weight: 500; line-height: 1.8; }
 
 .why-correct-section { background: #F0FDF4; }
-.why-wrong-section   { background: #FFF7F7; }
+
+/* Wrong options — each on its own line with left border */
+.why-wrong-section { background: #FFF7F7; }
+.why-wrong-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Style every paragraph (each wrong option) inside the wrong section */
+.why-wrong-content .math-para {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #FCA5A5;
+  background: #FFF1F2;
+  font-size: 15px;
+  font-family: var(--font-nunito), 'Nunito', sans-serif;
+  font-weight: 500;
+  line-height: 1.7;
+  margin: 0;
+}
 
 .takeaway-strip {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 18px 24px;
-  background: #EEF2FF;
-  border-top: 2px solid #2D3CE6;
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 18px 24px; background: #EEF2FF; border-top: 2px solid #2D3CE6;
 }
 .takeaway-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
 .takeaway-text {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 16px;
   color: #1E2A8A;
   line-height: 1.6;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
 
-/* Smooth expand animation for explanations */
-.explanation-expand {
-  overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
-              opacity 0.25s ease;
+/* Key points list (📐 / key points section) */
+.key-points-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 14px;
+  flex: 1;
 }
+.key-point-item { display: flex; gap: 12px; align-items: flex-start; }
+.key-point-bullet { color: #2D3CE6; font-size: 16px; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+.key-point-content {
+  flex: 1; font-size: 16px; font-weight: 500;
+  line-height: 1.7; font-family: var(--font-nunito), 'Nunito', sans-serif;
+}
+.key-point-detail {
+  font-size: 14px; font-weight: 400; color: #64748B;
+  margin: 4px 0 0 0; line-height: 1.6;
+}
+
+/* Smooth expand */
+.explanation-expand { overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0.0,0.2,1), opacity 0.25s ease; }
 .explanation-expand.closed { max-height: 0; opacity: 0; }
 .explanation-expand.open   { max-height: 3000px; opacity: 1; }
+
+/* ── Exam availability badges (landing page) ─────────────── */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(109,199,122,0.3); }
+  50%       { box-shadow: 0 0 0 5px rgba(109,199,122,0.1); }
+}

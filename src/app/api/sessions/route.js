@@ -50,12 +50,15 @@ export async function POST(request) {
     optionC:       q.option_c,
     optionD:       q.option_d,
     correctAnswer: q.correct_answer,
-    studentAnswer: answers[q.id] || null,
+    studentAnswer: answers[q.id] ?? null,   // null if not answered
     isCorrect:     answers[q.id] === q.correct_answer,
+    wasAnswered:   !!answers[q.id],          // explicit flag
     explanation:   q.explanation,
     topicTitle:    q.topic_title,
     difficulty:    q.difficulty,
   }))
+  // Score counts only answered-correct questions
+  // (score variable is already calculated before this point)
 
   const { data: session, error: sErr } = await supabase
     .from('exam_sessions')

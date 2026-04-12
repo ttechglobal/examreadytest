@@ -203,7 +203,7 @@ export function ExplanationCard({ explanation, isCorrect, correctAnswer, student
             <div className="explanation-section background-section">
               <span className="section-icon">📖</span>
               <div className="section-content">
-                <MathText>{clean(s.background)}</MathText>
+                <MathText as="div" block>{clean(s.background)}</MathText>
               </div>
             </div>
           )}
@@ -218,8 +218,8 @@ export function ExplanationCard({ explanation, isCorrect, correctAnswer, student
           {s.whyCorrect && (
             <div className="explanation-section why-correct-section">
               <span className="section-icon">✅</span>
-              <div style={{ flex: 1, fontSize: 16, lineHeight: 1.8 }}>
-                <MathText>{clean(s.whyCorrect)}</MathText>
+              <div style={{ flex: 1, fontSize: 16, fontWeight: 600, lineHeight: 1.8 }}>
+                <MathText as="div" block>{clean(s.whyCorrect)}</MathText>
               </div>
             </div>
           )}
@@ -228,8 +228,8 @@ export function ExplanationCard({ explanation, isCorrect, correctAnswer, student
           {s.whyWrong && (
             <div className="explanation-section why-wrong-section">
               <span className="section-icon">❌</span>
-              <div style={{ flex: 1, fontSize: 16, lineHeight: 1.8 }}>
-                <MathText>{clean(s.whyWrong)}</MathText>
+              <div className="why-wrong-content">
+                <MathText as="div" block>{clean(s.whyWrong)}</MathText>
               </div>
             </div>
           )}

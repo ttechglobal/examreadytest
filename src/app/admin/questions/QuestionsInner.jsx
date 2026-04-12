@@ -69,6 +69,7 @@ function DetailDrawer({ questionId, onClose }) {
       }}>
         <style>{`@keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}`}</style>
 
+        {/* Sticky header */}
         <div style={{ position: 'sticky', top: 0, background: '#fff', borderBottom: '1px solid #E8EAED', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 14, color: '#0A0A0A', margin: 0 }}>Question detail</p>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E2E8F0', background: '#F8FAFC', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#6B7280', lineHeight: 1 }}>×</button>
@@ -86,23 +87,26 @@ function DetailDrawer({ questionId, onClose }) {
 
           {question && !loading && (
             <>
+              {/* Meta pills */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
                 {[
                   { label: question.exam_type,   ...examStyle(question.exam_type) },
                   { label: question.subject_id?.charAt(0).toUpperCase() + question.subject_id?.slice(1), bg: '#F8FAFC', text: '#374151' },
                   { label: question.topic_title, bg: '#EEF0FE', text: '#2D3CE6' },
                   { label: question.difficulty,  ...diffStyle(question.difficulty) },
-                  ...(question.year  ? [{ label: String(question.year), bg: '#F8FAFC', text: '#94A3B8' }] : []),
-                  ...(question.paper ? [{ label: question.paper,        bg: '#F8FAFC', text: '#94A3B8' }] : []),
+                  ...(question.year ? [{ label: String(question.year), bg: '#F8FAFC', text: '#94A3B8' }] : []),
+                  ...(question.paper ? [{ label: question.paper, bg: '#F8FAFC', text: '#94A3B8' }] : []),
                 ].map(({ label, bg, text }) => label ? (
                   <span key={label} style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 99, background: bg, color: text }}>{label}</span>
                 ) : null)}
               </div>
 
+              {/* Question text */}
               <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, fontWeight: 500, color: '#0A0A0A', lineHeight: 1.7, marginBottom: 18 }}>
                 <MathText>{question.question_text}</MathText>
               </div>
 
+              {/* Options */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
                 {['a','b','c','d'].map(l => {
                   const letter    = l.toUpperCase()
@@ -123,6 +127,7 @@ function DetailDrawer({ questionId, onClose }) {
                 })}
               </div>
 
+              {/* Explanation */}
               <ExplanationCard
                 explanation={question.explanation}
                 isCorrect={null}
@@ -130,7 +135,8 @@ function DetailDrawer({ questionId, onClose }) {
                 studentAnswer={null}
               />
 
-              <div style={{ marginTop: 16 }}>
+              {/* Generate / regenerate explanation */}
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <button onClick={handleGenerate} disabled={generating}
                   style={{ width: '100%', padding: '10px 0', border: '1.5px solid #2D3CE6', borderRadius: 9, background: generating ? '#EEF0FE' : '#fff', color: '#2D3CE6', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13, cursor: generating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   {generating
@@ -138,11 +144,21 @@ function DetailDrawer({ questionId, onClose }) {
                     : question?.explanation ? 'Regenerate explanation with AI' : 'Generate explanation with AI'
                   }
                 </button>
-                {genError && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#DC2626', margin: '8px 0 0' }}>{genError}</p>}
+                {genError && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#DC2626', margin: 0 }}>{genError}</p>}
               </div>
               <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-              <div style={{ marginTop: 16, padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E8EAED', borderRadius: 8 }}>
+              {/* Generate explanation button */}
+              <div style={{ marginTop: 16 }}>
+                <button onClick={handleGenerate} disabled={generating}
+                  style={{ width: '100%', padding: '10px 0', border: '1.5px solid #2D3CE6', borderRadius: 9, background: '#fff', color: '#2D3CE6', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13, cursor: generating ? 'not-allowed' : 'pointer', opacity: generating ? 0.7 : 1 }}>
+                  {generating ? '⟳ Generating explanation…' : question?.explanation ? 'Regenerate with AI' : 'Generate explanation with AI'}
+                </button>
+                {genError && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#DC2626', margin: '8px 0 0' }}>{genError}</p>}
+              </div>
+
+              {/* Upload metadata */}
+              <div style={{ marginTop: 20, padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E8EAED', borderRadius: 8 }}>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#9CA3AF', margin: 0 }}>
                   Uploaded {new Date(question.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
                   {question.upload_batch ? ` · Batch ${question.upload_batch.slice(0, 8)}…` : ''}
@@ -156,14 +172,14 @@ function DetailDrawer({ questionId, onClose }) {
   )
 }
 
-// ─── Main inner component ─────────────────────────────────────
+// ─── Main page ────────────────────────────────────────────────
 export default function QuestionsInner() {
   const router       = useRouter()
   const pathname     = usePathname()
   const searchParams = useSearchParams()
   const [pending, startTransition] = useTransition()
 
-  const page       = parseInt(searchParams.get('page')       || '1')
+  const page       = parseInt(searchParams.get('page') || '1')
   const subject    = searchParams.get('subject')    || ''
   const examType   = searchParams.get('examType')   || ''
   const difficulty = searchParams.get('difficulty') || ''
@@ -221,6 +237,7 @@ export default function QuestionsInner() {
       />
 
       <div style={{ padding: 24, overflowY: 'auto', flex: 1 }}>
+        {/* Filters */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
           <select value={examType} onChange={e => updateFilter('examType', e.target.value)} style={fSel}>
             <option value="">All exams</option>
@@ -236,7 +253,7 @@ export default function QuestionsInner() {
           </select>
           <input
             defaultValue={search}
-            onKeyDown={e => e.key === 'Enter' && updateFilter('search', e.currentTarget.value)}
+            onKeyDown={e => e.key === 'Enter' && updateFilter('search', e.target.value)}
             placeholder="Search questions…"
             style={{ ...fSel, flex: 1, minWidth: 200, cursor: 'text' }}
           />
@@ -309,6 +326,7 @@ export default function QuestionsInner() {
               </tbody>
             </table>
 
+            {/* Pagination */}
             {totalPages > 1 && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid #F1F5F9', background: '#FAFAFA' }}>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#94A3B8', margin: 0 }}>
