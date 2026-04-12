@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui'
 
-const SUBJECTS = ['Physics','Mathematics','Chemistry','Biology','English','Government','History','Economics','Literature']
+// Subjects loaded dynamically from DB — only shows subjects with questions
 const EXAMS = [
   { id: 'JAMB', desc: 'University entry', available: true },
   { id: 'WAEC', desc: 'Coming soon', available: false },
@@ -18,8 +18,15 @@ export default function SetupInner() {
   const [subject,   setSubject]   = useState(params.get('subject') || '')
   const [nameError, setNameError] = useState('')
   const [mounted,   setMounted]   = useState(false)
+  const [subjects,  setSubjects]  = useState([])
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    setMounted(true)
+    fetch('/api/subjects')
+      .then(r => r.json())
+      .then(d => setSubjects(d.subjects || []))
+      .catch(() => setSubjects([]))
+  }, [])
 
   const isReady = name.trim().length >= 2 && examType && subject
 
@@ -103,17 +110,20 @@ export default function SetupInner() {
           <div className="mb-8">
             <p className="text-[13px] font-bold text-dark mb-3">Choose a subject</p>
             <div className="flex flex-wrap gap-2">
-              {SUBJECTS.map(s => (
+              {subjects.length === 0 && (
+                <p className="text-[13px] text-muted">Loading subjects…</p>
+              )}
+              {subjects.map(s => (
                 <button
                   key={s}
                   type="button"
-                  onClick={() => setSubject(s)}
+                  onClick={() => setSubject(s.id)}
                   className={`border-[1.5px] rounded-full px-4 py-2 text-[13px] font-semibold transition-all duration-150 active:scale-[.97]
-                    ${subject === s
+                    ${subject === s.id
                       ? 'border-brand bg-brand text-white'
                       : 'border-slate-200 bg-white text-dark hover:border-brand hover:text-brand'}`}
                 >
-                  {s}
+                  {s.title}
                 </button>
               ))}
             </div>

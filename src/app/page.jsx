@@ -211,7 +211,7 @@ function SubjectIcon({ name }) {
 }
 
 // ─── Data ────────────────────────────────────────────────────
-const SUBJECTS = ['Physics','Mathematics','Chemistry','Biology','English','Government','History','Economics','Literature']
+// SUBJECTS loaded dynamically from /api/subjects — see availableSubjects state in LandingPage
 
 const FEATURES = [
   { title: 'Real past questions', desc: 'Drawn directly from verified JAMB, WAEC, and NECO past papers — not generated or paraphrased.', accent: '#2D3CE6', bg: '#EEF0FE' },
@@ -365,8 +365,15 @@ function CommunitySection({ mw }) {
 
 // ─── Main page ────────────────────────────────────────────────
 export default function LandingPage() {
+  const [availableSubjects, setAvailableSubjects] = useState([])
   const [sessions, setSessions] = useState([])
-  useEffect(() => { getSessions().then(setSessions).catch(() => {}) }, [])
+  useEffect(() => {
+    getSessions().then(setSessions).catch(() => {})
+    fetch('/api/subjects')
+      .then(r => r.json())
+      .then(d => setAvailableSubjects(d.subjects || []))
+      .catch(() => {})
+  }, [])
 
   const mw = { maxWidth: 1120, margin: '0 auto', padding: '0 24px' }
   const mwMid = { maxWidth: 880, margin: '0 auto', padding: '0 24px' }
@@ -475,21 +482,24 @@ export default function LandingPage() {
       <section id="subjects" style={{ background: '#F5F7FF', padding: '100px 24px' }}>
         <div style={mw}>
           <Reveal>
-            <p style={{ ...label, marginBottom: 12 }}>9 subjects</p>
+            <p style={{ ...label, marginBottom: 12 }}>{availableSubjects.length} subject{availableSubjects.length !== 1 ? "s" : ""} available</p>
             <h2 style={{ ...h2, marginBottom: 16 }}>Pick your subject</h2>
             <p style={{ ...body, fontSize: 15, marginBottom: 48, maxWidth: 480 }}>Every subject includes questions from multiple years and all relevant exam types.</p>
           </Reveal>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
-            {SUBJECTS.map((subj, i) => (
-              <Reveal key={subj} delay={i * 35}>
-                <Link href={`/setup?subject=${subj}`} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#fff', border: '1.5px solid #E8EAED', borderRadius: 12, padding: '13px 15px', textDecoration: 'none', transition: 'all 0.15s' }}
+            {availableSubjects.length === 0 && (
+              <p style={{ fontSize: 14, color: '#94A3B8', gridColumn: '1 / -1' }}>Loading subjects…</p>
+            )}
+            {availableSubjects.map((subj, i) => (
+              <Reveal key={subj.id} delay={i * 35}>
+                <Link href={`/setup?subject=${subj.id}`} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#fff', border: '1.5px solid #E8EAED', borderRadius: 12, padding: '13px 15px', textDecoration: 'none', transition: 'all 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D3CE6'; e.currentTarget.style.background = '#F5F7FF'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px #2D3CE618' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8EAED'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
                   <div style={{ width: 34, height: 34, borderRadius: 9, background: '#F5F7FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <SubjectIcon name={subj} />
+                    <SubjectIcon name={subj.title} />
                   </div>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 13.5, color: '#0A0A0A' }}>{subj}</span>
+                  <span style={{ fontWeight: 600, fontSize: 13.5, color: '#0A0A0A' }}>{subj.title}</span>
                 </Link>
               </Reveal>
             ))}

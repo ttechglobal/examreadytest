@@ -193,6 +193,46 @@ export default function QuestionsInner() {
 
   const pageSize   = 50
   const totalPages = Math.ceil(total / pageSize)
+  const [selected, setSelected]   = useState(new Set())   // Set of selected question IDs
+  const [deleting, setDeleting]   = useState(false)
+  const [deleteErr, setDeleteErr] = useState(null)
+
+  function toggleSelect(id) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === questions.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(questions.map(q => q.id)))
+    }
+  }
+
+  async function handleDelete(idsToDelete) {
+    if (!idsToDelete.length) return
+    const count = idsToDelete.length
+    if (!confirm(`Delete ${count} question${count > 1 ? 's' : ''}? This cannot be undone.`)) return
+    setDeleting(true); setDeleteErr(null)
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: idsToDelete }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setDeleteErr(data.error || 'Delete failed'); return }
+      // Remove deleted from local state + clear selection
+      setQuestions(qs => qs.filter(q => !idsToDelete.includes(q.id)))
+      setTotal(t => t - (data.deleted || idsToDelete.length))
+      setSelected(new Set())
+    } catch (e) { setDeleteErr('Network error: ' + e.message) }
+    finally { setDeleting(false) }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -259,9 +299,27 @@ export default function QuestionsInner() {
           />
         </div>
 
+        {/* Bulk action bar — visible when any selected */}
+        {selected.size > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, padding: '10px 14px', background: '#FFF1F2', border: '1px solid #FCA5A5', borderRadius: 9 }}>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 600, color: '#B91C1C' }}>
+              {selected.size} question{selected.size > 1 ? 's' : ''} selected
+            </span>
+            <button onClick={() => handleDelete([...selected])} disabled={deleting}
+              style={{ padding: '6px 14px', border: 'none', borderRadius: 7, background: '#DC2626', color: '#fff', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 12, cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.7 : 1 }}>
+              {deleting ? 'Deleting…' : `Delete ${selected.size}`}
+            </button>
+            <button onClick={() => setSelected(new Set())}
+              style={{ padding: '6px 14px', border: '1px solid #E2E8F0', borderRadius: 7, background: '#fff', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 12, cursor: 'pointer', color: '#64748B' }}>
+              Clear selection
+            </button>
+            {deleteErr && <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#DC2626' }}>{deleteErr}</span>}
+          </div>
+        )}
+
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
           {total.toLocaleString()} question{total !== 1 ? 's' : ''}
-          {total > 0 && ' · click any row to view full question and explanation'}
+          {total > 0 && ' · click any row to view · check box to select for deletion'}
         </p>
 
         {error ? (
@@ -272,11 +330,18 @@ export default function QuestionsInner() {
           <div style={{ background: '#fff', border: '1px solid #E8EAED', borderRadius: 12, overflow: 'hidden', opacity: pending || loading ? 0.55 : 1, transition: 'opacity 0.2s' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
               <colgroup>
-                <col style={{ width: '4%' }}/><col style={{ width: '38%' }}/><col style={{ width: '12%' }}/><col style={{ width: '20%' }}/><col style={{ width: '10%' }}/><col style={{ width: '8%' }}/><col style={{ width: '8%' }}/>
+                <col style={{ width: '3%' }}/><col style={{ width: '3%' }}/><col style={{ width: '34%' }}/><col style={{ width: '10%' }}/><col style={{ width: '18%' }}/><col style={{ width: '9%' }}/><col style={{ width: '8%' }}/><col style={{ width: '7%' }}/><col style={{ width: '8%' }}/>
               </colgroup>
               <thead>
                 <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E8EAED' }}>
-                  {['#','Question','Exam','Topic','Year','Difficulty','Ans'].map(h => (
+                      <th style={{ padding: '10px 8px', width: 36 }}>
+                    <input type="checkbox"
+                      checked={questions.length > 0 && selected.size === questions.length}
+                      onChange={toggleSelectAll}
+                      style={{ cursor: 'pointer', width: 15, height: 15, accentColor: '#2D3CE6' }}
+                    />
+                  </th>
+              {['#','Question','Exam','Topic','Year','Difficulty','Ans',''].map(h => (
                     <th key={h} style={{ textAlign: 'left', fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 12px' }}>{h}</th>
                   ))}
                 </tr>
@@ -298,15 +363,23 @@ export default function QuestionsInner() {
                   const es = examStyle(q.exam_type)
                   return (
                     <tr key={q.id}
-                      onClick={() => setDrawerQId(q.id)}
-                      style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 0.1s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                      style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 0.1s', background: selected.has(q.id) ? '#FEF2F2' : '#fff' }}
+                      onMouseEnter={e => { if (!selected.has(q.id)) e.currentTarget.style.background = '#F8FAFC' }}
+                      onMouseLeave={e => { if (!selected.has(q.id)) e.currentTarget.style.background = '#fff' }}
                     >
-                      <td style={{ padding: '11px 12px', fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#94A3B8' }}>
+                      <td style={{ padding: '11px 8px' }} onClick={e => e.stopPropagation()}>
+                        <input type="checkbox"
+                          checked={selected.has(q.id)}
+                          onChange={() => toggleSelect(q.id)}
+                          style={{ cursor: 'pointer', width: 15, height: 15, accentColor: '#DC2626' }}
+                        />
+                      </td>
+                      <td style={{ padding: '11px 12px', fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#94A3B8' }}
+                        onClick={() => setDrawerQId(q.id)}>
                         {(page - 1) * pageSize + i + 1}
                       </td>
-                      <td style={{ padding: '11px 12px', fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={q.question_text}>
+                      <td style={{ padding: '11px 12px', fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={q.question_text}
+                        onClick={() => setDrawerQId(q.id)}>
                         {q.question_text}
                       </td>
                       <td style={{ padding: '11px 12px' }}>
@@ -319,7 +392,15 @@ export default function QuestionsInner() {
                       <td style={{ padding: '11px 12px' }}>
                         <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 99, background: ds.bg, color: ds.text }}>{q.difficulty}</span>
                       </td>
-                      <td style={{ padding: '11px 12px', fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 800, color: '#2D3CE6' }}>{q.correct_answer}</td>
+                      <td style={{ padding: '11px 12px', fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 800, color: '#2D3CE6' }}
+                        onClick={() => setDrawerQId(q.id)}>{q.correct_answer}</td>
+                      <td style={{ padding: '11px 8px' }} onClick={e => e.stopPropagation()}>
+                        <button onClick={() => handleDelete([q.id])} disabled={deleting}
+                          style={{ padding: '4px 10px', border: '1px solid #FCA5A5', borderRadius: 6, background: '#fff', color: '#DC2626', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}
+                          title="Delete this question">
+                          ✕
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}

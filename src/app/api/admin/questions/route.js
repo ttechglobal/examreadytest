@@ -38,3 +38,25 @@ export async function GET(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ questions: data || [], total: count || 0 })
 }
+
+// DELETE — single or bulk delete by IDs
+export async function DELETE(request) {
+  const supabase = createServerClient()
+
+  let body
+  try { body = await request.json() }
+  catch { return NextResponse.json({ error: 'Invalid body' }, { status: 400 }) }
+
+  const { ids } = body
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return NextResponse.json({ error: 'ids array required' }, { status: 400 })
+  }
+
+  const { error, count } = await supabase
+    .from('questions')
+    .delete({ count: 'exact' })
+    .in('id', ids)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ deleted: count ?? ids.length })
+}
