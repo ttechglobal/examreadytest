@@ -1,3 +1,4 @@
+import { cleanQuestionText, cleanOptionText } from '@/lib/utils/questionCleaner'
 import { NextResponse } from 'next/server'
 
 const REQUIRED = ['questionText','optionA','optionB','optionC','optionD','correctAnswer','topic','difficulty','explanation']
@@ -66,11 +67,12 @@ export async function POST(request) {
     }
 
     questions.push({
-      questionText:  q.questionText.trim(),
-      optionA:       q.optionA.trim(),
-      optionB:       q.optionB.trim(),
-      optionC:       q.optionC.trim(),
-      optionD:       q.optionD.trim(),
+      questionText:  cleanQuestionText(q.questionText),
+      optionA:       cleanOptionText(q.optionA),
+      optionB:       cleanOptionText(q.optionB),
+      optionC:       cleanOptionText(q.optionC),
+      optionD:       cleanOptionText(q.optionD),
+      // optionE deliberately excluded — system only supports A-D
       correctAnswer: answer,
       topic:         q.topic.trim(),
       difficulty,

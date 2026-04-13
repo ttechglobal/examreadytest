@@ -74,6 +74,8 @@ export async function POST(request) {
       recommendations,
       answers,
       question_review: questionReview,
+      cohort_id:           body.cohortId        ?? null,
+      school_student_id:   body.schoolStudentId ?? null,
     })
     .select('id, share_token')
     .single()

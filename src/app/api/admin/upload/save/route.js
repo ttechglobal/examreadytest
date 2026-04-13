@@ -1,3 +1,4 @@
+import { cleanQuestionText, cleanOptionText } from '@/lib/utils/questionCleaner'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normaliseSubject, normaliseExamType } from '@/lib/utils/constants'
@@ -89,11 +90,11 @@ export async function POST(request) {
       exam_type:      normExamType,
       year:           year ? parseInt(year) : null,
       paper:          paper?.trim() || null,
-      question_text:  q.questionText?.trim()  || '',
-      option_a:       q.optionA?.trim()        || '',
-      option_b:       q.optionB?.trim()        || '',
-      option_c:       q.optionC?.trim()        || '',
-      option_d:       q.optionD?.trim()        || '',
+      question_text:  cleanQuestionText(q.questionText),
+      option_a:       cleanOptionText(q.optionA),
+      option_b:       cleanOptionText(q.optionB),
+      option_c:       cleanOptionText(q.optionC),
+      option_d:       cleanOptionText(q.optionD),
       correct_answer: q.correctAnswer?.trim().toUpperCase() || 'A',
       explanation:    q.explanation?.trim()    || '',
       difficulty:     ['easy','medium','hard'].includes(q.difficulty) ? q.difficulty : 'medium',

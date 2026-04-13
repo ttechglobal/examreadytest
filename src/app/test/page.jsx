@@ -184,7 +184,7 @@ export default function TestPage() {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentName: setup.studentName, examType: setup.examType, subject: setup.subject, answers, timeTaken: seconds }),
+        body: JSON.stringify({ studentName: setup.studentName, examType: setup.examType, subject: setup.subject, answers, timeTaken: seconds, cohortId: setup.cohortId || null, schoolStudentId: setup.schoolStudentId || null }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Submission failed') }
       const data = await res.json()

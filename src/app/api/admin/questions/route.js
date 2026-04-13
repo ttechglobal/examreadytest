@@ -40,6 +40,7 @@ export async function GET(request) {
 }
 
 // DELETE — single or bulk delete by IDs
+// Must delete question_attempts first (FK constraint)
 export async function DELETE(request) {
   const supabase = createServerClient()
 
@@ -52,6 +53,17 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'ids array required' }, { status: 400 })
   }
 
+  // Step 1: Delete child records in question_attempts first
+  const { error: attemptsErr } = await supabase
+    .from('question_attempts')
+    .delete()
+    .in('question_id', ids)
+
+  if (attemptsErr) {
+    return NextResponse.json({ error: `Failed to delete attempts: ${attemptsErr.message}` }, { status: 500 })
+  }
+
+  // Step 2: Now delete the questions themselves
   const { error, count } = await supabase
     .from('questions')
     .delete({ count: 'exact' })

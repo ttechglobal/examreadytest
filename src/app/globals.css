@@ -99,7 +99,7 @@
    400 = captions, metadata
    ─────────────────────────────────────────────────────────── */
 
-/* ── MathText ─────────────────────────────────────────────── */
+/* ── MathText & math rendering ──────────────────────────── */
 
 .math-text {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
@@ -107,57 +107,89 @@
 }
 .math-block { display: block; }
 
-.math-text .katex { font-size: 1.05em; line-height: 1.6; }
-.math-text .katex-display { margin: 12px 0; overflow-x: auto; padding-bottom: 4px; }
-
-/* Bold inside MathText */
-.math-text strong, .explanation-card strong {
-  font-weight: 800;
-  color: #1A1A1A;
-}
-
-/* Inline bullet rendered by renderMath */
-.inline-bullet {
-  color: #2D3CE6;
-  font-weight: 800;
-  margin-right: 6px;
-}
-
-/* Option dash for ❌ wrong options */
-.option-dash {
-  color: #94A3B8;
-  margin-right: 4px;
-  font-weight: 600;
-}
-
-/* Paragraph blocks from renderMath */
 .math-para {
-  margin: 0 0 10px 0;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
-  line-height: 1.85;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.9;
+  margin: 0 0 12px 0;
+  color: #1A1A1A;
 }
 .math-para:last-child { margin-bottom: 0; }
 
-/* ── Question + option sizing ─────────────────────────────── */
+/* Inline math */
+.katex { font-size: 1.05em; }
 
-.question-text {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.85;
-  color: #1A1A1A;
-  letter-spacing: -0.1px;
+/* Display math — centred, breathing room */
+.katex-display {
+  margin: 16px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+  padding: 12px 0;
 }
 
-.option-label {
+/* Bullet lists in explanations */
+.math-bullet-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.explanation-card .math-bullet-list {
+  gap: 12px;
+  margin: 10px 0;
+}
+.math-para + .math-bullet-list { margin-top: 14px; }
+
+.math-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
   font-size: 16px;
-  font-weight: 600;
-  line-height: 1.7;
+  font-weight: 500;
+  line-height: 1.75;
+  padding: 2px 0;
+}
+.math-bullet::before {
+  content: "▸";
+  color: #2D3CE6;
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* Bold */
+.math-text strong,
+.math-para strong,
+.explanation-card strong {
+  font-weight: 800;
   color: #1A1A1A;
 }
 
-/* ── ExplanationCard ─────────────────────────────────────── */
+/* KaTeX — never inherit Nunito */
+.katex, .katex * {
+  font-family: KaTeX_Main, KaTeX_Math, KaTeX_Caligraphic,
+               KaTeX_AMS, KaTeX_Typewriter, serif !important;
+}
+
+/* Step content — equations left-aligned, one per line */
+.step-content .katex-display {
+  text-align: left;
+  margin: 6px 0;
+  padding: 0;
+}
+.step-content .math-para {
+  font-size: 16px;
+  line-height: 2;
+}
+
+/* ── ExplanationCard ─────────────────────────────────── */
 
 .explanation-card {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
@@ -188,6 +220,12 @@
   border-bottom: 1px solid #F1F5F9;
 }
 .section-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; line-height: 1; }
+.section-label {
+  font-family: var(--font-nunito), 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #374151;
+}
 
 .concept-label {
   font-weight: 700;
@@ -236,27 +274,47 @@
   flex-shrink: 0; margin-top: 2px;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
-.step-content { flex: 1; padding-top: 4px; font-size: 16px; font-weight: 500; line-height: 1.8; }
+.step-content { flex: 1; padding-top: 4px; font-size: 16px; font-weight: 500; line-height: 1.9; }
 
 .why-correct-section { background: #F0FDF4; }
 
-/* Wrong options — each on its own line with left border */
-.why-wrong-section { background: #FFF7F7; }
-.why-wrong-content {
-  flex: 1;
+/* Wrong options — individual cards */
+.why-wrong-section {
+  border-bottom: 1px solid #F1F5F9;
+}
+.why-wrong-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px 12px;
+}
+.wrong-options-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  padding: 0 24px 20px;
 }
-/* Style every paragraph (each wrong option) inside the wrong section */
-.why-wrong-content .math-para {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border-left: 3px solid #FCA5A5;
-  background: #FFF1F2;
-  font-size: 15px;
+.wrong-option-card {
+  background: #FFF7F7;
+  border: 1px solid #FECACA;
+  border-left: 3px solid #DC2626;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.wrong-option-letter {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #DC2626;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.wrong-option-reason {
+  font-family: var(--font-nunito), 'Nunito', sans-serif;
+  font-size: 15px;
   font-weight: 500;
+  color: #374151;
   line-height: 1.7;
   margin: 0;
 }
@@ -267,34 +325,24 @@
 }
 .takeaway-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
 .takeaway-text {
-  font-weight: 800;
-  font-size: 16px;
-  color: #1E2A8A;
-  line-height: 1.6;
+  font-weight: 800; font-size: 16px; color: #1E2A8A; line-height: 1.6;
   font-family: var(--font-nunito), 'Nunito', sans-serif;
-}
-
-/* Key points list (📐 / key points section) */
-.key-points-list {
-  list-style: none; padding: 0; margin: 0;
-  display: flex; flex-direction: column; gap: 14px;
-  flex: 1;
-}
-.key-point-item { display: flex; gap: 12px; align-items: flex-start; }
-.key-point-bullet { color: #2D3CE6; font-size: 16px; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
-.key-point-content {
-  flex: 1; font-size: 16px; font-weight: 500;
-  line-height: 1.7; font-family: var(--font-nunito), 'Nunito', sans-serif;
-}
-.key-point-detail {
-  font-size: 14px; font-weight: 400; color: #64748B;
-  margin: 4px 0 0 0; line-height: 1.6;
 }
 
 /* Smooth expand */
 .explanation-expand { overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0.0,0.2,1), opacity 0.25s ease; }
 .explanation-expand.closed { max-height: 0; opacity: 0; }
 .explanation-expand.open   { max-height: 3000px; opacity: 1; }
+
+/* Diagram */
+.diagram-svg { width: 100%; max-width: 300px; margin: 16px auto; display: block; }
+.diagram-label { font-family: var(--font-nunito), 'Nunito', sans-serif; font-size: 13px; font-weight: 700; fill: #1A1A1A; }
+.diagram-placeholder {
+  display: flex; align-items: center; gap: 10px;
+  background: #F8F9FA; border: 1.5px dashed #CBD5E1; border-radius: 10px;
+  padding: 14px 16px; margin: 12px 0;
+}
+.diagram-note { font-family: var(--font-nunito), 'Nunito', sans-serif; font-size: 14px; font-weight: 500; color: #64748B; margin: 0; line-height: 1.5; font-style: italic; }
 
 /* ── Exam availability badges (landing page) ─────────────── */
 @keyframes pulse-dot {
