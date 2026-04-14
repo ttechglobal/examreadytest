@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import ReviewClient from './ReviewClient'
 
 export default async function ReviewPage({ params }) {
@@ -17,5 +18,9 @@ export default async function ReviewPage({ params }) {
 
   if (error || !session) notFound()
 
-  return <ReviewClient session={session} shareToken={params.shareToken} />
+  return (
+    <Suspense fallback={null}>
+      <ReviewClient session={session} shareToken={params.shareToken} />
+    </Suspense>
+  )
 }
