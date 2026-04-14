@@ -49,57 +49,56 @@ function analyseResults(questions, answers) {
 }
 
 export async function POST(request) {
-  // Check env vars first — surface misconfiguration clearly
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('Missing Supabase env vars')
-    return NextResponse.json({ error: 'Server misconfiguration — missing Supabase credentials' }, { status: 500 })
-  }
-
   let body
-  try { body = await request.json() }
-  catch (e) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  try {
+    body = await request.json()
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid JSON body', detail: String(e) }, { status: 400 })
   }
 
-  const { studentName, examType, subject, answers, timeTaken, cohortId, schoolStudentId } = body
+  const { studentName, examType, subject, answers, questionIds, timeTaken, cohortId, schoolStudentId } = body
 
-  // Log what arrived — helps diagnose Vercel-specific issues
-  console.log('Session submit received:', {
-    studentName: studentName ? `"${String(studentName).slice(0,20)}"` : 'MISSING',
-    examType:    examType    ? `"${examType}"` : 'MISSING',
-    subject:     subject     ? `"${subject}"` : 'MISSING',
-    answerCount: answers     ? Object.keys(answers).length : 0,
-  })
+  // Return the exact values received so we can debug
+  if (!studentName || !examType || !subject) {
+    return NextResponse.json({
+      error: 'Missing required fields',
+      received: { studentName, examType, subject, answerKeys: Object.keys(answers || {}).length }
+    }, { status: 400 })
+  }
 
-  // Validation — permissive on examType (accept any non-empty string)
-  if (!studentName?.trim() || studentName.trim().length < 2)
-    return NextResponse.json({ error: `Name is required — received: "${studentName}"` }, { status: 400 })
-  if (!examType?.trim())
-    return NextResponse.json({ error: `Exam type is required — received: "${examType}"` }, { status: 400 })
-  if (!subject?.trim())
-    return NextResponse.json({ error: `Subject is required — received: "${subject}"` }, { status: 400 })
-  if (!answers || typeof answers !== 'object' || !Object.keys(answers).length)
-    return NextResponse.json({ error: 'No answers were submitted.' }, { status: 400 })
+  const safeAnswers = answers && typeof answers === 'object' ? answers : {}
+  const idsToFetch  = Array.isArray(questionIds) && questionIds.length > 0
+    ? questionIds
+    : Object.keys(safeAnswers)
 
-  const supabase    = createServerClient()
-  const answerIds   = Object.keys(answers)
+  if (!idsToFetch.length) {
+    return NextResponse.json({ error: 'No question IDs to process' }, { status: 400 })
+  }
 
-  // Fetch questions server-side — correct answers never exposed to client before this point
+  // Check env vars
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    return NextResponse.json({ error: 'Missing NEXT_PUBLIC_SUPABASE_URL' }, { status: 500 })
+  }
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 })
+  }
+
+  const supabase = createServerClient()
+
+  // Fetch questions
   const { data: questions, error: qErr } = await supabase
     .from('questions')
     .select('id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation, topic_id, topic_title, difficulty')
-    .in('id', answerIds)
+    .in('id', idsToFetch)
 
   if (qErr) {
-    console.error('Question fetch error:', qErr)
-    return NextResponse.json({ error: `Could not load questions: ${qErr.message}` }, { status: 500 })
+    return NextResponse.json({ error: 'Question fetch failed', detail: qErr.message }, { status: 500 })
   }
-
   if (!questions?.length) {
-    return NextResponse.json({ error: 'No valid questions found for submission.' }, { status: 400 })
+    return NextResponse.json({ error: 'No questions found in DB for provided IDs', idCount: idsToFetch.length }, { status: 400 })
   }
 
-  const { score, topicResults, recommendations } = analyseResults(questions, answers)
+  const { score, topicResults, recommendations } = analyseResults(questions, safeAnswers)
   const totalQuestions = questions.length
   const percentage     = parseFloat(((score / totalQuestions) * 100).toFixed(2))
 
@@ -111,9 +110,9 @@ export async function POST(request) {
     optionC:       q.option_c,
     optionD:       q.option_d,
     correctAnswer: q.correct_answer,
-    studentAnswer: answers[q.id] ?? null,
-    isCorrect:     answers[q.id] === q.correct_answer,
-    wasAnswered:   answers[q.id] != null,
+    studentAnswer: safeAnswers[q.id] ?? null,
+    isCorrect:     safeAnswers[q.id] === q.correct_answer,
+    wasAnswered:   safeAnswers[q.id] != null,
     explanation:   q.explanation,
     topicTitle:    q.topic_title,
     difficulty:    q.difficulty,
@@ -131,7 +130,7 @@ export async function POST(request) {
       time_taken:        typeof timeTaken === 'number' ? timeTaken : null,
       topic_results:     topicResults,
       recommendations,
-      answers,
+      answers:           safeAnswers,
       question_review:   questionReview,
       cohort_id:         cohortId        || null,
       school_student_id: schoolStudentId || null,
@@ -140,23 +139,20 @@ export async function POST(request) {
     .single()
 
   if (sErr) {
-    console.error('Session insert error:', sErr)
-    return NextResponse.json({ error: `Failed to save session: ${sErr.message}` }, { status: 500 })
+    return NextResponse.json({ error: 'Session insert failed', detail: sErr.message, code: sErr.code }, { status: 500 })
   }
 
-  // Save question attempts — non-blocking, failure is acceptable
+  // Save attempts non-blocking
   supabase
     .from('question_attempts')
-    .insert(
-      questions.map(q => ({
-        session_id:      session.id,
-        question_id:     q.id,
-        selected_answer: answers[q.id] || null,
-        is_correct:      answers[q.id] === q.correct_answer,
-      }))
-    )
+    .insert(questions.map(q => ({
+      session_id:      session.id,
+      question_id:     q.id,
+      selected_answer: safeAnswers[q.id] || null,
+      is_correct:      safeAnswers[q.id] === q.correct_answer,
+    })))
     .then(() => {})
-    .catch(() => {}) // Never let this block the response
+    .catch(() => {})
 
   return NextResponse.json({
     shareToken:    session.share_token,
