@@ -1,7 +1,39 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { selectQuestions } from '@/lib/questions/selector'
-import { normaliseSubject, normaliseExamType } from '@/lib/utils/constants'
+
+function _shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+function _groupBy(arr, key) {
+  return arr.reduce((acc, item) => { const k = item[key]; acc[k] = acc[k] ?? []; acc[k].push(item); return acc }, {})
+}
+function selectQuestions(allQuestions, targetCount = 40) {
+  if (allQuestions.length <= targetCount) return _shuffle(allQuestions)
+  const byTopic  = _groupBy(allQuestions, 'topic_id')
+  const topicIds = Object.keys(byTopic)
+  const perTopic = Math.max(1, Math.floor(targetCount / topicIds.length))
+  let selected = [], surplusPools = []
+  for (const topicId of topicIds) {
+    const qs = byTopic[topicId]
+    const hf = qs.filter(q => q.high_frequency)
+    const pool = [...hf, ..._shuffle(qs.filter(q => !q.high_frequency))]
+    if (pool.length <= perTopic) { selected.push(...pool) }
+    else { selected.push(...pool.slice(0, perTopic)); surplusPools.push(...pool.slice(perTopic)) }
+  }
+  const deficit = targetCount - selected.length
+  if (deficit > 0) selected.push(..._shuffle(surplusPools).slice(0, deficit))
+  return _shuffle(selected).slice(0, targetCount)
+}
+
+
+function normaliseSubject(s)  { return s?.toLowerCase().trim().replace(/\s+/g, '_') || '' }
+function normaliseExamType(e) { return e?.toUpperCase().trim() || '' }
+
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)

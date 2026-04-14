@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+
+import { createClient } from '@supabase/supabase-js'
+
+function createServerClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)

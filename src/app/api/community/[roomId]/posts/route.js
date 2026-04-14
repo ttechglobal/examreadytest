@@ -1,6 +1,23 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { getDeviceHash } from '@/lib/community/deviceHash'
+
+import { createClient } from '@supabase/supabase-js'
+
+import { createHash } from 'crypto'
+function getDeviceHash(request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  const ua = request.headers.get('user-agent') ?? 'unknown'
+  return createHash('sha256').update(`${ip}:${ua}`).digest('hex').slice(0, 16)
+}
+
+
+function createServerClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
 
 const PROFANITY = ['fuck','shit','ass','bitch','bastard','nigga','cunt']
 function hasProfanity(text) {

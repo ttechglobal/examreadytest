@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import { verifyAdminJWT } from '@/lib/auth/jwt'
+
+import { jwtVerify } from 'jose'
+
+async function verifyAdminJWT(token) {
+  if (!token) return null
+  try {
+    const secret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET)
+    const { payload } = await jwtVerify(token, secret)
+    return payload
+  } catch { return null }
+}
+
 
 export async function GET(request) {
   const token   = cookies().get('admin_token')?.value

@@ -1,7 +1,28 @@
-import { cleanQuestionText, cleanOptionText } from '@/lib/utils/questionCleaner'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { normaliseSubject, normaliseExamType } from '@/lib/utils/constants'
+
+function normaliseSubject(s)  { return s?.toLowerCase().trim().replace(/\s+/g, '_') || '' }
+function normaliseExamType(e) { return e?.toUpperCase().trim() || '' }
+
+
+const _INSTRUCTION_PATTERNS = [
+  /^choose\s+(the\s+)?correct\s+(option|answer)[:\.\s]*/i,
+  /^choose\s+your\s+question\s+type[:\.\s]*/i,
+  /^select\s+(the\s+)?correct\s+(option|answer)[:\.\s]*/i,
+  /^\d+[\.\)]\s*/,
+  /^question\s+\d+[\.\):\s]*/i,
+]
+function cleanQuestionText(text) {
+  if (!text) return ''
+  let c = text.trim()
+  _INSTRUCTION_PATTERNS.forEach(p => { c = c.replace(p, '') })
+  return c.trim()
+}
+function cleanOptionText(text) {
+  if (!text) return ''
+  return text.trim().replace(/^[A-Ea-e][\.\)]\s+/, '').trim()
+}
+
 
 export async function POST(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL

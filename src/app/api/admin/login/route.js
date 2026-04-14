@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
-import { signAdminJWT } from '@/lib/auth/jwt'
+import { SignJWT } from 'jose'
+
+async function signAdminJWT(payload) {
+  const secret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET)
+  return new SignJWT({ ...payload, type: 'admin' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('8h')
+    .sign(secret)
+}
 
 export async function POST(request) {
   let body
@@ -11,10 +20,9 @@ export async function POST(request) {
   const configuredEmail    = process.env.ADMIN_EMAIL
   const configuredPassword = process.env.ADMIN_PASSWORD
 
-  // Env vars missing entirely
   if (!configuredEmail || !configuredPassword) {
     return NextResponse.json({
-      message: 'Server misconfiguration: ADMIN_EMAIL or ADMIN_PASSWORD env var is missing. Check your .env.local and restart the server.',
+      message: 'Server misconfiguration: ADMIN_EMAIL or ADMIN_PASSWORD env var is missing.',
     }, { status: 500 })
   }
 
@@ -22,7 +30,6 @@ export async function POST(request) {
   const passwordMatch = password === configuredPassword
 
   if (!emailMatch || !passwordMatch) {
-    // In dev only, surface which field is wrong
     if (process.env.NODE_ENV !== 'production') {
       return NextResponse.json({
         message: `Invalid credentials. Email match: ${emailMatch}, Password match: ${passwordMatch}`,
@@ -31,7 +38,7 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
   }
 
-  const token = await signAdminJWT({ role: 'admin', email: email.trim().toLowerCase() })
+  const token    = await signAdminJWT({ role: 'admin', email: email.trim().toLowerCase() })
   const response = NextResponse.json({ success: true })
   response.cookies.set('admin_token', token, {
     httpOnly: true,

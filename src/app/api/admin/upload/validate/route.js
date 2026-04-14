@@ -1,5 +1,23 @@
-import { cleanQuestionText, cleanOptionText } from '@/lib/utils/questionCleaner'
 import { NextResponse } from 'next/server'
+
+const _INSTRUCTION_PATTERNS = [
+  /^choose\s+(the\s+)?correct\s+(option|answer)[:\.\s]*/i,
+  /^choose\s+your\s+question\s+type[:\.\s]*/i,
+  /^select\s+(the\s+)?correct\s+(option|answer)[:\.\s]*/i,
+  /^\d+[\.\)]\s*/,
+  /^question\s+\d+[\.\):\s]*/i,
+]
+function cleanQuestionText(text) {
+  if (!text) return ''
+  let c = text.trim()
+  _INSTRUCTION_PATTERNS.forEach(p => { c = c.replace(p, '') })
+  return c.trim()
+}
+function cleanOptionText(text) {
+  if (!text) return ''
+  return text.trim().replace(/^[A-Ea-e][\.\)]\s+/, '').trim()
+}
+
 
 const REQUIRED = ['questionText','optionA','optionB','optionC','optionD','correctAnswer','topic','difficulty','explanation']
 const VALID_ANSWERS = ['A','B','C','D']

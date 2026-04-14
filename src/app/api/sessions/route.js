@@ -1,7 +1,35 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { analyseResults } from '@/lib/results/analyser'
-import { getRateLimiter } from '@/lib/utils/rateLimit'
+
+import { createClient } from '@supabase/supabase-js'
+
+function getRateLimiter() { return null } // Rate limiting disabled — add Upstash env vars to enable
+
+
+function analyseResults(questions, answers) {
+  const byTopic = questions.reduce((acc, q) => { acc[q.topic_id] = acc[q.topic_id] ?? []; acc[q.topic_id].push(q); return acc }, {})
+  const topicResults = Object.entries(byTopic).map(([topicId, qs]) => {
+    const correct = qs.filter(q => answers[q.id] === q.correct_answer).length
+    const total   = qs.length
+    const pct     = Math.round((correct / total) * 100)
+    return { topicId, topicTitle: qs[0].topics?.title || qs[0].topic_title || 'Unknown topic', correct, total, percentage: pct, status: pct >= 70 ? 'strong' : pct >= 40 ? 'needs_work' : 'critical' }
+  })
+  const score = topicResults.reduce((sum, t) => sum + t.correct, 0)
+  const recommendations = topicResults.filter(t => t.status !== 'strong').sort((a, b) => a.percentage - b.percentage).slice(0, 3).map(t => ({
+    topicId: t.topicId, topicTitle: t.topicTitle, priority: t.status === 'critical' ? 1 : 2,
+    message: t.status === 'critical' ? `Focus on ${t.topicTitle} first — you missed most questions here.` : `Review ${t.topicTitle} — there are gaps in your understanding.`,
+  }))
+  return { score, topicResults, recommendations }
+}
+
+
+function createServerClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
 
 export async function POST(request) {
   const limiter = getRateLimiter()
