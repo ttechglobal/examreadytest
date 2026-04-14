@@ -354,11 +354,19 @@ export default function ResultsClient({ session, shareToken }) {
     <main style={{ minHeight: '100vh', background: '#F8FAFC', fontFamily: 'Nunito, sans-serif' }}>
       <div style={{ maxWidth: 620, margin: '0 auto', padding: '32px 16px 48px' }}>
 
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-          <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#2D3CE6"/><path d="M10 22V10l6 9 6-9v12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 16, color: '#0A0A0A' }}>Learniie</span>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#EEF0FE', color: '#2D3CE6' }}>Exam Prep</span>
+        {/* Top bar — logo + home button */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#2D3CE6"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 15, color: '#0A0A0A' }}>Exam Ready Test</span>
+          </div>
+          <Link href="/"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#64748B', textDecoration: 'none', padding: '7px 14px', border: '1.5px solid #E2E8F0', borderRadius: 9, background: '#fff', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D3CE6'; e.currentTarget.style.color = '#2D3CE6' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L3.5 6.5l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Home
+          </Link>
         </div>
 
         {/* Score hero */}
@@ -394,17 +402,42 @@ export default function ResultsClient({ session, shareToken }) {
           </div>
         )}
 
+        {/* Unanswered questions prompt — shown prominently if any were skipped */}
+        {(() => {
+          const unanswered = (session.question_review || []).filter(q => !q.studentAnswer)
+          if (!unanswered.length) return null
+          return (
+            <div style={{ ...card, background: '#FFFBEB', border: '1.5px solid #FCD34D', padding: '20px 24px' }}>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ fontSize: 28, flexShrink: 0 }}>📌</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 900, fontSize: 16, color: '#92400E', marginBottom: 6 }}>
+                    You skipped {unanswered.length} question{unanswered.length > 1 ? 's' : ''}
+                  </p>
+                  <p style={{ fontSize: 14, color: '#92400E', lineHeight: 1.65, marginBottom: 16 }}>
+                    You can see the correct answers for all {unanswered.length} question{unanswered.length > 1 ? 's' : ''} you didn't answer — along with full explanations showing how to solve them.
+                  </p>
+                  <Link href={`/review/${shareToken}?filter=unanswered`}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#D97706', color: '#fff', fontWeight: 800, fontSize: 14, padding: '11px 22px', borderRadius: 9, textDecoration: 'none' }}>
+                    See the {unanswered.length} skipped answer{unanswered.length > 1 ? 's' : ''} →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Review your answers */}
         <div style={{ ...card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <p style={{ fontWeight: 800, fontSize: 16, color: '#0A0A0A', marginBottom: 4 }}>📋 Review your answers</p>
+            <p style={{ fontWeight: 800, fontSize: 16, color: '#0A0A0A', marginBottom: 4 }}>📋 Review all answers</p>
             <p style={{ fontSize: 14, color: '#6B7280', lineHeight: 1.6, margin: 0 }}>
               Go through all {session.total_questions} questions with explanations, one at a time.
             </p>
           </div>
           <Link href={`/review/${shareToken}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#0A0A0A', color: '#fff', fontWeight: 700, fontSize: 14, padding: '12px 22px', borderRadius: 10, textDecoration: 'none', flexShrink: 0 }}>
-            Review answers →
+            Review all {session.total_questions} answers →
           </Link>
         </div>
 

@@ -1,70 +1,85 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Spinner, Modal, Toast } from '@/components/ui'
+import { Spinner, Modal } from '@/components/ui'
 import { MathText } from '@/components/ui/MathText'
+import { ExplanationCard } from '@/components/exam/ExplanationCard'
+
+// ─── Logo ─────────────────────────────────────────────────────
+function Logo() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="7" fill="#2D3CE6"/>
+      <path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
 
 // ─── Option button ────────────────────────────────────────────
-function Option({ letter, text, selected, onSelect }) {
+function Option({ letter, text, state, onSelect }) {
+  // state: 'default' | 'selected' | 'correct' | 'wrong' | 'reveal'
+  const styles = {
+    default:  'border-slate-200 bg-white hover:border-brand/40 hover:bg-brand-light/30',
+    selected: 'border-brand bg-brand shadow-brand-glow',
+    correct:  'border-green-500 bg-green-50',
+    wrong:    'border-danger bg-red-50',
+    reveal:   'border-green-500 bg-green-50',
+  }
+  const letterStyles = {
+    default:  'bg-slate-100 text-muted',
+    selected: 'bg-white/20 text-white',
+    correct:  'bg-green-500 text-white',
+    wrong:    'bg-danger text-white',
+    reveal:   'bg-green-500 text-white',
+  }
+  const textStyles = {
+    default:  'text-dark',
+    selected: 'text-white',
+    correct:  'text-green-800',
+    wrong:    'text-red-800',
+    reveal:   'text-green-800',
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`flex items-start gap-3 p-4 rounded-xl border-[1.5px] text-left w-full transition-all duration-150 active:scale-[.99]
-        ${selected
-          ? 'border-brand bg-brand shadow-brand-glow'
-          : 'border-slate-200 bg-white hover:border-brand/40 hover:bg-brand-light/30'}`}
-    >
-      <span className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-[12px] font-bold mt-0.5 transition-colors
-        ${selected ? 'bg-white/20 text-white' : 'bg-slate-100 text-muted'}`}>
+    <button type="button" onClick={onSelect} disabled={state === 'correct' || state === 'reveal' || state === 'wrong'}
+      className={`flex items-start gap-3 p-4 rounded-xl border-[1.5px] text-left w-full transition-all duration-150 active:scale-[.99] ${styles[state] || styles.default}`}>
+      <span className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-[12px] font-bold mt-0.5 transition-colors ${letterStyles[state] || letterStyles.default}`}>
         {letter}
       </span>
-      <MathText as="span" className={`text-[15px] leading-relaxed font-medium transition-colors ${selected ? 'text-white' : 'text-dark'}`}>
+      <MathText as="span" className={`text-[15px] leading-relaxed font-medium transition-colors ${textStyles[state] || textStyles.default}`}>
         {text}
       </MathText>
-      {selected && (
-        <svg className="ml-auto mt-1 shrink-0 animate-scale-in" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M3 8l4 4 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      )}
+      {state === 'correct' && <svg className="ml-auto mt-1 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="#16A34A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      {state === 'selected' && <svg className="ml-auto mt-1 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      {state === 'wrong' && <svg className="ml-auto mt-1 shrink-0" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"/></svg>}
     </button>
   )
 }
 
-// ─── Question grid ────────────────────────────────────────────
-function QuestionGrid({ total, currentIdx, answeredIds, questions, onSelect }) {
+// ─── Navigator grid ───────────────────────────────────────────
+function Navigator({ total, currentIdx, answeredIds, onSelect }) {
   const answered = new Set(answeredIds)
   return (
     <div className="bg-white rounded-card border border-slate-100 shadow-card p-4">
-      <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-3">Question Navigator</p>
-      <div className="grid grid-cols-8 gap-1.5 mb-4">
-        {Array.from({ length: total }, (_, i) => {
-          const q = questions[i]
-          const ans = q && answered.has(q.id)
-          const cur = i === currentIdx
-          return (
-            <button
-              key={i}
-              onClick={() => onSelect(i)}
-              className={`aspect-square rounded-[7px] text-[11px] font-bold transition-all duration-100
-                ${cur ? 'border-[1.5px] border-brand text-brand bg-brand-light scale-110 z-10'
-                : ans ? 'bg-brand text-white border border-brand'
-                : 'border border-slate-200 text-muted hover:border-brand/40 hover:text-brand bg-white'}`}
-            >
-              {i + 1}
-            </button>
-          )
-        })}
+      <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-3">Navigator</p>
+      <div className="grid grid-cols-8 gap-1.5 mb-3">
+        {Array.from({ length: total }, (_, i) => (
+          <button key={i} onClick={() => onSelect(i)}
+            className={`aspect-square rounded-[7px] text-[11px] font-bold transition-all duration-100
+              ${i === currentIdx
+                ? 'border-[1.5px] border-brand text-brand bg-brand-light scale-110 z-10'
+                : answered.has(i)
+                  ? 'bg-brand text-white border border-brand'
+                  : 'border border-slate-200 text-muted hover:border-brand/40 bg-white'}`}>
+            {i + 1}
+          </button>
+        ))}
       </div>
       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-2">
-        <div
-          className="h-full bg-brand rounded-full transition-all duration-300"
-          style={{ width: `${Math.round(answeredIds.length / total * 100)}%` }}
-        />
+        <div className="h-full bg-brand rounded-full transition-all duration-300" style={{ width: `${Math.round(answeredIds.length / total * 100)}%` }}/>
       </div>
       <p className="text-[12px] text-muted">
-        <span className="font-bold text-dark">{answeredIds.length}</span> answered ·{' '}
-        <span className="font-bold text-dark">{total - answeredIds.length}</span> remaining
+        <span className="font-bold text-dark">{answeredIds.length}</span> answered · <span className="font-bold text-dark">{total - answeredIds.length}</span> remaining
       </p>
     </div>
   )
@@ -79,7 +94,6 @@ const CALC_ROWS = [
   [{ l:'1',v:'1' },{ l:'2',v:'2' },{ l:'3',v:'3' },{ l:'+',v:'+',a:'op' }],
   [{ l:'0',v:'0',wide:true },{ l:'.',v:'.' },{ l:'=',v:'=',a:'eq' }],
 ]
-
 function Calculator({ open, onClose }) {
   const [display, setDisplay] = useState('0')
   const [expr, setExpr] = useState('')
@@ -97,7 +111,6 @@ function Calculator({ open, onClose }) {
     if (['+','-','*','/','%'].includes(val)) { setExpr(e => e + display + val); setDisplay('0'); return }
     setDisplay(d => { if (d === '0' && val !== '.') return val; if (val === '.' && d.includes('.')) return d; return d + val })
   }, [display, expr])
-
   if (!open) return null
   return (
     <>
@@ -114,15 +127,12 @@ function Calculator({ open, onClose }) {
           {CALC_ROWS.map((row, ri) => (
             <div key={ri} className="grid gap-2" style={{ gridTemplateColumns: row.map(b => b.wide ? '2fr' : '1fr').join(' ') }}>
               {row.map(btn => (
-                <button
-                  key={btn.v}
-                  onClick={() => press(btn.v)}
+                <button key={btn.v} onClick={() => press(btn.v)}
                   className={`py-3 rounded-xl text-[14px] font-bold transition-all active:scale-95
                     ${btn.a === 'op' ? 'bg-brand text-white hover:bg-brand-dark'
                     : btn.a === 'eq' ? 'bg-warning text-white hover:opacity-90'
                     : btn.a === 'gray' ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
-                    : 'bg-slate-800 text-white hover:bg-slate-700'}`}
-                >
+                    : 'bg-slate-800 text-white hover:bg-slate-700'}`}>
                   {btn.l}
                 </button>
               ))}
@@ -137,17 +147,23 @@ function Calculator({ open, onClose }) {
 // ─── Main test page ───────────────────────────────────────────
 export default function TestPage() {
   const router = useRouter()
-  const [setup, setSetup]           = useState(null)
   const setupRef = useRef(null)
-  const [questions, setQuestions]   = useState([])
-  const [answers, setAnswers]       = useState({})
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const [seconds, setSeconds]       = useState(0)
-  const [calcOpen, setCalcOpen]     = useState(false)
-  const [modalOpen, setModalOpen]   = useState(false)
-  const [loading, setLoading]       = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError]           = useState(null)
+
+  const [setup,       setSetup]       = useState(null)
+  const [questions,   setQuestions]   = useState([])
+  const [answers,     setAnswers]     = useState({})   // { qId: 'A'|'B'|'C'|'D' }
+  const [currentIdx,  setCurrentIdx]  = useState(0)
+  const [seconds,     setSeconds]     = useState(0)
+  const [calcOpen,    setCalcOpen]    = useState(false)
+  const [modalOpen,   setModalOpen]   = useState(false)
+  const [loading,     setLoading]     = useState(true)
+  const [submitting,  setSubmitting]  = useState(false)
+  const [error,       setError]       = useState(null)
+
+  // Study mode state
+  const [studyPhase,  setStudyPhase]  = useState('answering') // 'answering' | 'feedback'
+  const [wrongAns,    setWrongAns]    = useState(null)        // the wrong letter picked
+
   const timerRef = useRef(null)
 
   useEffect(() => {
@@ -155,12 +171,42 @@ export default function TestPage() {
     if (!raw) { router.replace('/setup'); return }
     const parsed = JSON.parse(raw)
     setSetup(parsed)
-    setupRef.current = parsed  // keep ref in sync
-    fetch(`/api/questions?subject=${encodeURIComponent(parsed.subject)}&examType=${parsed.examType}`)
+    setupRef.current = parsed
+
+    const count = parsed.questionCount || 40
+    fetch(`/api/questions?subject=${encodeURIComponent(parsed.subject)}&examType=${parsed.examType}&count=${count}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => { setQuestions(d.questions); setLoading(false) })
+      .then(d => {
+        // Slice to requested count
+        const qs = (d.questions || []).slice(0, count)
+        setQuestions(qs)
+        setLoading(false)
+      })
       .catch(() => { setError('Could not load questions. Please try again.'); setLoading(false) })
   }, [])
+
+  // Timer
+  useEffect(() => {
+    if (loading) return
+    const setup = setupRef.current
+    const isExam = !setup?.mode || setup.mode === 'exam'
+    const limit  = setup?.timeLimit || (isExam ? 7200 : null)
+
+    if (isExam && limit) {
+      // Countdown
+      setSeconds(limit)
+      timerRef.current = setInterval(() => {
+        setSeconds(s => {
+          if (s <= 1) { clearInterval(timerRef.current); handleSubmit(); return 0 }
+          return s - 1
+        })
+      }, 1000)
+    } else {
+      // Count up
+      timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000)
+    }
+    return () => clearInterval(timerRef.current)
+  }, [loading])
 
   useEffect(() => {
     const handler = e => { e.preventDefault(); e.returnValue = '' }
@@ -168,34 +214,57 @@ export default function TestPage() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [])
 
-  useEffect(() => {
-    if (!loading) {
-      timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000)
-    }
-    return () => clearInterval(timerRef.current)
-  }, [loading])
+  const formatTime = s => {
+    const t = Math.abs(s)
+    return `${Math.floor(t/60).toString().padStart(2,'0')}:${(t%60).toString().padStart(2,'0')}`
+  }
 
-  const formatTime = s => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
+  const isExamMode  = !setup?.mode || setup.mode === 'exam'
+  const isStudyMode = setup?.mode === 'study'
   const answeredIds = Object.keys(answers)
-  const currentQ = questions[currentIdx]
-  const isLast = currentIdx === questions.length - 1
+  const currentQ    = questions[currentIdx]
+  const isLast      = currentIdx === questions.length - 1
+  const isCountdown = isExamMode
+
+  // Study mode: handle answer selection
+  function handleStudyAnswer(letter) {
+    if (studyPhase === 'feedback') return
+    const correct = currentQ.correctAnswer // not available client-side, handled server-side
+    // In study mode we don't have correctAnswer client-side — record answer and show explanation after
+    setAnswers(prev => ({ ...prev, [currentQ.id]: letter }))
+    setStudyPhase('feedback')
+  }
+
+  // Study mode: next question
+  function studyNext() {
+    setStudyPhase('answering')
+    setWrongAns(null)
+    if (isLast) {
+      handleSubmit()
+    } else {
+      setCurrentIdx(i => i + 1)
+    }
+  }
 
   async function handleSubmit() {
-    setSubmitting(true); clearInterval(timerRef.current); setModalOpen(false)
+    setSubmitting(true)
+    clearInterval(timerRef.current)
+    setModalOpen(false)
+    const s = setupRef.current || setup
     try {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            studentName:     (setupRef.current || setup)?.studentName,
-            examType:        (setupRef.current || setup)?.examType,
-            subject:         (setupRef.current || setup)?.subject,
-            answers,
-            questionIds:     questions.map(q => q.id),
-            timeTaken:       seconds,
-            cohortId:        (setupRef.current || setup)?.cohortId        || null,
-            schoolStudentId: (setupRef.current || setup)?.schoolStudentId || null,
-          }),
+          studentName:     s?.studentName,
+          examType:        s?.examType,
+          subject:         s?.subject,
+          answers,
+          questionIds:     questions.map(q => q.id),
+          timeTaken:       seconds,
+          cohortId:        s?.cohortId        || null,
+          schoolStudentId: s?.schoolStudentId || null,
+        }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Submission failed') }
       const data = await res.json()
@@ -218,26 +287,94 @@ export default function TestPage() {
   if (loading || submitting) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface">
       <Spinner size={36}/>
-      <p className="text-[14px] text-muted font-semibold">{submitting ? 'Calculating your results…' : 'Loading your questions…'}</p>
+      <p className="text-[14px] text-muted font-semibold">{submitting ? 'Saving your results…' : 'Loading questions…'}</p>
     </div>
   )
 
+  // ─── Study mode question card ──────────────────────────────
+  if (isStudyMode) {
+    const q = currentQ
+    const picked = answers[q?.id]
+    return (
+      <div className="min-h-screen bg-surface font-nunito">
+        <header className="sticky top-0 z-20 bg-white border-b border-slate-100 shadow-sm px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Logo/>
+            <span className="font-black text-[14px] text-dark hidden sm:block">Exam Ready Test</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="bg-brand-light text-brand text-[11px] font-bold px-2.5 py-1 rounded-full">Study Mode</span>
+            <span className="text-[13px] font-bold text-dark tabular-nums">{formatTime(seconds)}</span>
+            <span className="text-[12px] text-muted">{currentIdx + 1}/{questions.length}</span>
+          </div>
+        </header>
+
+        <div className="max-w-[640px] mx-auto px-4 py-6">
+          <div className="bg-white rounded-card border border-slate-100 shadow-card p-5 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[11px] font-bold text-muted uppercase tracking-wider">Q {currentIdx + 1}</span>
+              {q?.topicTitle && <span className="bg-brand-light text-brand text-[11px] font-bold px-2.5 py-0.5 rounded-full">{q.topicTitle}</span>}
+            </div>
+            <MathText as="p" className="text-[17px] font-semibold text-dark leading-relaxed mb-5">{q?.questionText}</MathText>
+            <div className="flex flex-col gap-2.5">
+              {[['A', q?.optionA], ['B', q?.optionB], ['C', q?.optionC], ['D', q?.optionD]].map(([l, t]) => {
+                let state = 'default'
+                if (studyPhase === 'feedback') {
+                  // We don't know correct answer client-side in study mode
+                  // Just show selected state; explanation shown below
+                  state = picked === l ? 'selected' : 'default'
+                } else {
+                  state = picked === l ? 'selected' : 'default'
+                }
+                return (
+                  <Option key={l} letter={l} text={t} state={state}
+                    onSelect={() => studyPhase === 'answering' && handleStudyAnswer(l)}/>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Study feedback — show after answering */}
+          {studyPhase === 'feedback' && (
+            <div className="animate-fade-slide-up">
+              <div className="bg-brand-light border border-brand/20 rounded-card p-4 mb-4">
+                <p className="text-[13px] font-bold text-brand mb-1">Answer recorded ✓</p>
+                <p className="text-[12px] text-muted">See the full explanation and correct answer after you submit.</p>
+              </div>
+              <button onClick={studyNext}
+                className="w-full py-3.5 bg-brand text-white font-bold text-[15px] rounded-[12px] hover:bg-brand-dark transition-colors active:scale-[.98]">
+                {isLast ? 'Submit & See Results →' : 'Next Question →'}
+              </button>
+            </div>
+          )}
+
+          {studyPhase === 'answering' && (
+            <p className="text-center text-[12px] text-muted mt-2">Select an answer to continue</p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Exam mode ────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-surface font-nunito">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white border-b border-slate-100 shadow-sm px-4 py-3 flex items-center justify-between gap-4">
-        <div className="flex flex-col min-w-0">
-          <p className="text-[13px] font-bold text-dark leading-none truncate">{setup?.studentName}</p>
-          <p className="text-[11px] text-muted mt-0.5 truncate">{setup?.subject} · {setup?.examType}</p>
+        <div className="flex items-center gap-2 min-w-0">
+          <Logo/>
+          <div className="min-w-0">
+            <p className="text-[13px] font-bold text-dark leading-none truncate">{setup?.studentName}</p>
+            <p className="text-[11px] text-muted mt-0.5 truncate capitalize">{setup?.subject} · {setup?.examType}</p>
+          </div>
         </div>
-        <div className="text-[13px] font-bold text-dark shrink-0">Q {currentIdx + 1} / {questions.length}</div>
+        <div className="text-[13px] font-bold text-dark shrink-0">Q {currentIdx + 1}/{questions.length}</div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="bg-brand-light text-brand text-[13px] font-bold px-2.5 py-1 rounded-full tabular-nums">{formatTime(seconds)}</span>
-          <button
-            onClick={() => setCalcOpen(o => !o)}
-            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-muted hover:bg-slate-50 transition-colors"
-            title="Calculator"
-          >
+          <span className={`text-[13px] font-bold px-2.5 py-1 rounded-full tabular-nums ${isCountdown && seconds < 300 ? 'bg-red-50 text-danger' : 'bg-brand-light text-brand'}`}>
+            {isCountdown ? '⏱ ' : ''}{formatTime(seconds)}
+          </span>
+          <button onClick={() => setCalcOpen(o => !o)}
+            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-muted hover:bg-slate-50 transition-colors" title="Calculator">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.2"/>
               <rect x="3" y="3" width="3" height="1.8" rx=".5" fill="currentColor"/>
@@ -253,40 +390,31 @@ export default function TestPage() {
       </header>
 
       <div className="max-w-[960px] mx-auto px-4 py-5 lg:flex lg:gap-6">
-
-        {/* Question panel */}
+        {/* Question */}
         <div className="lg:flex-1 lg:min-w-0">
           {currentQ && (
             <div className="bg-white rounded-card border border-slate-100 shadow-card p-5 mb-4 animate-fade-in">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[11px] font-bold text-muted uppercase tracking-wider">Question {currentIdx + 1}</span>
-                <span className="bg-brand-light text-brand text-[11px] font-bold px-2.5 py-0.5 rounded-full">{currentQ.topicTitle}</span>
+                {currentQ.topicTitle && <span className="bg-brand-light text-brand text-[11px] font-bold px-2.5 py-0.5 rounded-full">{currentQ.topicTitle}</span>}
               </div>
-              <MathText as="p" className="text-[17px] font-semibold text-dark leading-relaxed mb-6 question-text">{currentQ.questionText}</MathText>
+              <MathText as="p" className="text-[17px] font-semibold text-dark leading-relaxed mb-6">{currentQ.questionText}</MathText>
               <div className="flex flex-col gap-2.5">
                 {[['A', currentQ.optionA], ['B', currentQ.optionB], ['C', currentQ.optionC], ['D', currentQ.optionD]].map(([l, t]) => (
-                  <Option
-                    key={l} letter={l} text={t}
-                    selected={answers[currentQ.id] === l}
-                    onSelect={() => setAnswers(prev => ({ ...prev, [currentQ.id]: l }))}
-                  />
+                  <Option key={l} letter={l} text={t}
+                    state={answers[currentQ.id] === l ? 'selected' : 'default'}
+                    onSelect={() => setAnswers(prev => ({ ...prev, [currentQ.id]: l }))}/>
                 ))}
               </div>
             </div>
           )}
-
           <div className="flex gap-3">
-            <button
-              onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
-              disabled={currentIdx === 0}
-              className="flex-1 border-[1.5px] border-slate-200 text-dark font-bold text-[14px] py-3 rounded-[10px] hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
+            <button onClick={() => setCurrentIdx(i => Math.max(0, i - 1))} disabled={currentIdx === 0}
+              className="flex-1 border-[1.5px] border-slate-200 text-dark font-bold text-[14px] py-3 rounded-[10px] hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
               ← Previous
             </button>
-            <button
-              onClick={() => isLast ? setModalOpen(true) : setCurrentIdx(i => i + 1)}
-              className="flex-1 border-[1.5px] border-brand text-brand font-bold text-[14px] py-3 rounded-[10px] hover:bg-brand-light transition-colors"
-            >
+            <button onClick={() => isLast ? setModalOpen(true) : setCurrentIdx(i => i + 1)}
+              className="flex-1 border-[1.5px] border-brand text-brand font-bold text-[14px] py-3 rounded-[10px] hover:bg-brand-light transition-colors">
               {isLast ? 'Review & Submit →' : 'Next →'}
             </button>
           </div>
@@ -294,17 +422,8 @@ export default function TestPage() {
 
         {/* Sidebar */}
         <div className="mt-5 lg:mt-0 lg:w-[220px] lg:shrink-0">
-          <QuestionGrid
-            total={questions.length}
-            currentIdx={currentIdx}
-            answeredIds={answeredIds}
-            questions={questions}
-            onSelect={setCurrentIdx}
-          />
-          <button
-            onClick={() => setModalOpen(true)}
-            className="w-full mt-3 border-[1.5px] border-danger text-danger font-bold text-[13px] py-2.5 rounded-[10px] hover:bg-red-50 transition-colors"
-          >
+          <Navigator total={questions.length} currentIdx={currentIdx} answeredIds={answeredIds.map(id => questions.findIndex(q => q.id === id)).filter(i => i >= 0)} onSelect={setCurrentIdx}/>
+          <button onClick={() => setModalOpen(true)} className="w-full mt-3 border-[1.5px] border-danger text-danger font-bold text-[13px] py-2.5 rounded-[10px] hover:bg-red-50 transition-colors">
             Submit Test
           </button>
         </div>
@@ -312,21 +431,17 @@ export default function TestPage() {
 
       <Calculator open={calcOpen} onClose={() => setCalcOpen(false)}/>
 
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Submit your test?"
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Submit your test?"
         footer={
           <>
             <button onClick={() => setModalOpen(false)} className="flex-1 border border-slate-200 text-dark font-bold text-[14px] py-3 rounded-[10px] hover:bg-slate-50 transition-colors">Keep reviewing</button>
             <button onClick={handleSubmit} className="flex-1 bg-brand text-white font-bold text-[14px] py-3 rounded-[10px] hover:bg-brand-dark transition-colors">Submit now</button>
           </>
-        }
-      >
+        }>
         <p className="text-[14px] text-muted leading-relaxed">
           {answeredIds.length === questions.length
             ? "You've answered all questions. Ready to see your results?"
-            : `You have ${questions.length - answeredIds.length} unanswered question${questions.length - answeredIds.length > 1 ? 's' : ''}. Continue reviewing or submit now?`}
+            : `${questions.length - answeredIds.length} question${questions.length - answeredIds.length > 1 ? 's' : ''} unanswered. Submit anyway?`}
         </p>
       </Modal>
     </div>
