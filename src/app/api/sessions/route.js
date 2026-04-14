@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-function createServerClient() {
+// v3 - fully defensive
+
+function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -23,24 +25,20 @@ function analyseResults(questions, answers) {
     return {
       topicId,
       topicTitle: qs[0].topic_title || 'Unknown topic',
-      correct,
-      total,
-      percentage: pct,
+      correct, total, percentage: pct,
       status: pct >= 70 ? 'strong' : pct >= 40 ? 'needs_work' : 'critical',
     }
   })
 
   const score = topicResults.reduce((sum, t) => sum + t.correct, 0)
-
   const recommendations = topicResults
     .filter(t => t.status !== 'strong')
     .sort((a, b) => a.percentage - b.percentage)
     .slice(0, 3)
     .map(t => ({
-      topicId:    t.topicId,
-      topicTitle: t.topicTitle,
-      priority:   t.status === 'critical' ? 1 : 2,
-      message:    t.status === 'critical'
+      topicId: t.topicId, topicTitle: t.topicTitle,
+      priority: t.status === 'critical' ? 1 : 2,
+      message: t.status === 'critical'
         ? `Focus on ${t.topicTitle} first — you missed most questions here.`
         : `Review ${t.topicTitle} — there are gaps in your understanding.`,
     }))
@@ -49,55 +47,57 @@ function analyseResults(questions, answers) {
 }
 
 export async function POST(request) {
+  // Step 1: parse body
   let body
-  try {
-    body = await request.json()
-  } catch (e) {
-    return NextResponse.json({ error: 'Invalid JSON body', detail: String(e) }, { status: 400 })
+  try { body = await request.json() }
+  catch (e) { return NextResponse.json({ error: 'Invalid JSON', detail: String(e) }, { status: 400 }) }
+
+  const {
+    studentName, examType, subject,
+    answers = {}, questionIds = [],
+    timeTaken, cohortId, schoolStudentId,
+  } = body
+
+  // Step 2: validate required fields
+  if (!studentName?.trim()) return NextResponse.json({ error: 'studentName missing' }, { status: 400 })
+  if (!examType?.trim())    return NextResponse.json({ error: 'examType missing' }, { status: 400 })
+  if (!subject?.trim())     return NextResponse.json({ error: 'subject missing' }, { status: 400 })
+
+  // Step 3: build ID list — prefer questionIds (all 40), fall back to answered keys
+  const safeAnswers  = typeof answers === 'object' && answers !== null ? answers : {}
+  const answeredIds  = Object.keys(safeAnswers)
+  const allIds       = Array.isArray(questionIds) && questionIds.length > 0 ? questionIds : answeredIds
+
+  if (allIds.length === 0) {
+    return NextResponse.json({ error: 'No question IDs — answers and questionIds both empty' }, { status: 400 })
   }
 
-  const { studentName, examType, subject, answers, questionIds, timeTaken, cohortId, schoolStudentId } = body
+  // Step 4: check env vars
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL)    return NextResponse.json({ error: 'Env missing: NEXT_PUBLIC_SUPABASE_URL' }, { status: 500 })
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY)   return NextResponse.json({ error: 'Env missing: SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 })
 
-  // Return the exact values received so we can debug
-  if (!studentName || !examType || !subject) {
-    return NextResponse.json({
-      error: 'Missing required fields',
-      received: { studentName, examType, subject, answerKeys: Object.keys(answers || {}).length }
-    }, { status: 400 })
-  }
+  const supabase = getSupabase()
 
-  const safeAnswers = answers && typeof answers === 'object' ? answers : {}
-  const idsToFetch  = Array.isArray(questionIds) && questionIds.length > 0
-    ? questionIds
-    : Object.keys(safeAnswers)
-
-  if (!idsToFetch.length) {
-    return NextResponse.json({ error: 'No question IDs to process' }, { status: 400 })
-  }
-
-  // Check env vars
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return NextResponse.json({ error: 'Missing NEXT_PUBLIC_SUPABASE_URL' }, { status: 500 })
-  }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 })
-  }
-
-  const supabase = createServerClient()
-
-  // Fetch questions
+  // Step 5: fetch questions — NO verified filter, fetch by ID only
   const { data: questions, error: qErr } = await supabase
     .from('questions')
     .select('id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation, topic_id, topic_title, difficulty')
-    .in('id', idsToFetch)
+    .in('id', allIds)
 
-  if (qErr) {
-    return NextResponse.json({ error: 'Question fetch failed', detail: qErr.message }, { status: 500 })
-  }
-  if (!questions?.length) {
-    return NextResponse.json({ error: 'No questions found in DB for provided IDs', idCount: idsToFetch.length }, { status: 400 })
+  if (qErr) return NextResponse.json({ error: 'DB error fetching questions', detail: qErr.message }, { status: 500 })
+
+  if (!questions || questions.length === 0) {
+    // Try to diagnose — check if ANY questions exist
+    const { count } = await supabase.from('questions').select('*', { count: 'exact', head: true })
+    return NextResponse.json({
+      error: 'No questions found for submitted IDs',
+      submittedIdCount: allIds.length,
+      sampleId: allIds[0],
+      totalQuestionsInDB: count,
+    }, { status: 400 })
   }
 
+  // Step 6: score
   const { score, topicResults, recommendations } = analyseResults(questions, safeAnswers)
   const totalQuestions = questions.length
   const percentage     = parseFloat(((score / totalQuestions) * 100).toFixed(2))
@@ -118,6 +118,7 @@ export async function POST(request) {
     difficulty:    q.difficulty,
   }))
 
+  // Step 7: insert session
   const { data: session, error: sErr } = await supabase
     .from('exam_sessions')
     .insert({
@@ -138,29 +139,21 @@ export async function POST(request) {
     .select('id, share_token')
     .single()
 
-  if (sErr) {
-    return NextResponse.json({ error: 'Session insert failed', detail: sErr.message, code: sErr.code }, { status: 500 })
-  }
+  if (sErr) return NextResponse.json({ error: 'Session insert failed', detail: sErr.message, code: sErr.code }, { status: 500 })
 
-  // Save attempts non-blocking
-  supabase
-    .from('question_attempts')
-    .insert(questions.map(q => ({
+  // Step 8: attempts (non-blocking)
+  supabase.from('question_attempts').insert(
+    questions.map(q => ({
       session_id:      session.id,
       question_id:     q.id,
       selected_answer: safeAnswers[q.id] || null,
       is_correct:      safeAnswers[q.id] === q.correct_answer,
-    })))
-    .then(() => {})
-    .catch(() => {})
+    }))
+  ).then(() => {}).catch(() => {})
 
   return NextResponse.json({
-    shareToken:    session.share_token,
-    score,
-    totalQuestions,
-    percentage,
-    topicResults,
-    recommendations,
-    questionReview,
+    shareToken: session.share_token,
+    score, totalQuestions, percentage,
+    topicResults, recommendations, questionReview,
   })
 }
