@@ -3,75 +3,122 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
-  const [email, setEmail]       = useState('')
+  const router   = useRouter()
+  const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
+  const [error,    setError]    = useState('')
+  const [loading,  setLoading]  = useState(false)
 
-  async function handleLogin(e) {
-    e.preventDefault()
+  async function handleLogin() {
+    if (!email.trim() || !password) {
+      setError('Please enter your email and password.')
+      return
+    }
     setLoading(true); setError('')
     try {
       const res = await fetch('/api/admin/login', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body:    JSON.stringify({ email: email.trim(), password }),
       })
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Invalid credentials') }
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.message || 'Invalid credentials')
+        return
+      }
       router.push('/admin/dashboard')
     } catch (err) {
-      setError(err.message)
+      setError('Network error — check your connection.')
     } finally {
       setLoading(false)
     }
   }
 
+  const inp = {
+    width: '100%', padding: '12px 14px', fontSize: 14,
+    background: '#0F172A', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 10, color: '#fff', outline: 'none',
+    fontFamily: 'Inter, sans-serif', boxSizing: 'border-box',
+  }
+  const lbl = {
+    display: 'block', fontSize: 11, fontWeight: 700,
+    color: '#64748B', textTransform: 'uppercase',
+    letterSpacing: '0.08em', marginBottom: 7,
+  }
+
   return (
-    <main className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4 font-inter">
-      <div className="w-full max-w-[380px]">
-        <div className="flex items-center gap-2.5 justify-center mb-8">
-          <div className="w-9 h-9 bg-brand rounded-[9px] flex items-center justify-center text-white font-black text-lg">L</div>
+    <main style={{
+      minHeight: '100vh', background: '#0F172A',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24, fontFamily: 'Inter, sans-serif',
+    }}>
+      <div style={{ width: '100%', maxWidth: 380 }}>
+
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: 32 }}>
+          <div style={{ width: 36, height: 36, background: '#2D3CE6', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 16 }}>L</div>
           <div>
-            <p className="text-white font-bold text-[16px] leading-none">Learniie</p>
-            <p className="text-slate-500 text-[11px] font-medium mt-0.5">Admin Portal</p>
+            <p style={{ color: '#fff', fontWeight: 700, fontSize: 15, margin: 0 }}>Learniie</p>
+            <p style={{ color: '#475569', fontSize: 11, margin: 0 }}>Admin Portal</p>
           </div>
         </div>
 
-        <div className="bg-[#1E293B] rounded-2xl border border-white/[0.06] p-6">
-          <h1 className="text-white font-bold text-[18px] mb-1">Sign in</h1>
-          <p className="text-slate-400 text-[13px] mb-6">Access the Learniie admin dashboard</p>
+        {/* Card */}
+        <div style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 28 }}>
+          <h1 style={{ color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Sign in</h1>
+          <p style={{ color: '#64748B', fontSize: 13, marginBottom: 24 }}>Access the admin dashboard</p>
 
+          {/* Error */}
           {error && (
-            <div className="bg-red-900/30 border border-red-800/50 text-red-400 text-[13px] px-3.5 py-2.5 rounded-xl mb-4">
+            <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#FCA5A5', fontSize: 13, padding: '10px 14px', borderRadius: 9, marginBottom: 18 }}>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                placeholder="admin@learniie.com"
-                className="w-full bg-[#0F172A] border border-white/[0.08] rounded-xl px-3.5 py-3 text-[14px] text-white placeholder:text-slate-600 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
-              <input
-                type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                placeholder="••••••••"
-                className="w-full bg-[#0F172A] border border-white/[0.08] rounded-xl px-3.5 py-3 text-[14px] text-white placeholder:text-slate-600 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-              />
-            </div>
-            <button
-              type="submit" disabled={loading}
-              className="w-full mt-2 bg-brand text-white font-bold text-[14px] py-3.5 rounded-xl hover:bg-brand-dark transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Signing in…' : 'Sign in →'}
-            </button>
-          </form>
+          {/* Email */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={lbl}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              placeholder="admin@learniie.com"
+              style={inp}
+              onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+            />
+          </div>
+
+          {/* Password */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={lbl}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              placeholder="••••••••"
+              style={inp}
+              onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+            />
+          </div>
+
+          {/* Button */}
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            style={{
+              width: '100%', padding: '13px 0', border: 'none',
+              borderRadius: 10, background: loading ? '#1e2cc0' : '#2D3CE6',
+              color: '#fff', fontWeight: 700, fontSize: 14,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'Inter, sans-serif', opacity: loading ? 0.7 : 1,
+              transition: 'all 0.15s',
+            }}>
+            {loading ? 'Signing in…' : 'Sign in →'}
+          </button>
         </div>
       </div>
     </main>
