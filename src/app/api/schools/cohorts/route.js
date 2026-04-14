@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import { verifyInstitutionJWT } from '@/lib/auth/jwt'
+import { jwtVerify } from 'jose'
+
+async function verifyInstitutionToken(token) {
+  if (!token) return null
+  try {
+    const secret = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET)
+    const { payload } = await jwtVerify(token, secret)
+    if (payload.type !== 'institution') return null
+    return payload
+  } catch { return null }
+}
 
 function getSupabase() {
   return createClient(
@@ -11,19 +21,15 @@ function getSupabase() {
   )
 }
 
-async function getInstitution() {
-  const token = cookies().get('institution_token')?.value
-  return token ? await verifyInstitutionJWT(token) : null
-}
-
 function generateAccessCode(name, year) {
-  const slug = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase()
+  const slug = (name || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase() || 'SCHOOL'
   const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
   return `${slug}-${year}-${rand}`
 }
 
 export async function GET() {
-  const inst = await getInstitution()
+  const token = cookies().get('institution_token')?.value
+  const inst  = await verifyInstitutionToken(token)
   if (!inst) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = getSupabase()
@@ -38,19 +44,18 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const inst = await getInstitution()
+  const token = cookies().get('institution_token')?.value
+  const inst  = await verifyInstitutionToken(token)
   if (!inst) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { academicYear, label, examType, subjects } = await request.json()
-
   if (!academicYear || !examType || !subjects?.length) {
     return NextResponse.json({ error: 'academicYear, examType, and subjects are required' }, { status: 400 })
   }
 
-  const supabase  = getSupabase()
+  const supabase   = getSupabase()
   const accessCode = generateAccessCode(inst.name, academicYear)
   const appUrl     = process.env.NEXT_PUBLIC_APP_URL || 'https://examreadytest.com'
-  const accessUrl  = `${appUrl}/join/${accessCode}`
 
   const { data, error } = await supabase
     .from('cohorts')
@@ -61,7 +66,7 @@ export async function POST(request) {
       exam_type:      examType.toUpperCase(),
       subjects,
       access_code:    accessCode,
-      access_url:     accessUrl,
+      access_url:     `${appUrl}/join/${accessCode}`,
     })
     .select()
     .single()
