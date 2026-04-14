@@ -138,6 +138,7 @@ function Calculator({ open, onClose }) {
 export default function TestPage() {
   const router = useRouter()
   const [setup, setSetup]           = useState(null)
+  const setupRef = useRef(null)  // always-current ref — avoids stale closure in handleSubmit
   const [questions, setQuestions]   = useState([])
   const [answers, setAnswers]       = useState({})
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -154,6 +155,7 @@ export default function TestPage() {
     if (!raw) { router.replace('/setup'); return }
     const parsed = JSON.parse(raw)
     setSetup(parsed)
+    setupRef.current = parsed  // keep ref in sync
     fetch(`/api/questions?subject=${encodeURIComponent(parsed.subject)}&examType=${parsed.examType}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => { setQuestions(d.questions); setLoading(false) })
@@ -184,7 +186,7 @@ export default function TestPage() {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentName: setup.studentName, examType: setup.examType, subject: setup.subject, answers, timeTaken: seconds, cohortId: setup.cohortId || null, schoolStudentId: setup.schoolStudentId || null }),
+        body: JSON.stringify({ studentName: (setupRef.current || setup)?.studentName, examType: (setupRef.current || setup)?.examType, subject: (setupRef.current || setup)?.subject, answers, timeTaken: seconds, cohortId: (setupRef.current || setup)?.cohortId || null, schoolStudentId: (setupRef.current || setup)?.schoolStudentId || null }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Submission failed') }
       const data = await res.json()

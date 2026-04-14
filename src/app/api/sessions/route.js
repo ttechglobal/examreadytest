@@ -63,13 +63,21 @@ export async function POST(request) {
 
   const { studentName, examType, subject, answers, timeTaken, cohortId, schoolStudentId } = body
 
+  // Log what arrived — helps diagnose Vercel-specific issues
+  console.log('Session submit received:', {
+    studentName: studentName ? `"${String(studentName).slice(0,20)}"` : 'MISSING',
+    examType:    examType    ? `"${examType}"` : 'MISSING',
+    subject:     subject     ? `"${subject}"` : 'MISSING',
+    answerCount: answers     ? Object.keys(answers).length : 0,
+  })
+
   // Validation — permissive on examType (accept any non-empty string)
   if (!studentName?.trim() || studentName.trim().length < 2)
-    return NextResponse.json({ error: 'Please enter your name (at least 2 characters).' }, { status: 400 })
+    return NextResponse.json({ error: `Name is required — received: "${studentName}"` }, { status: 400 })
   if (!examType?.trim())
-    return NextResponse.json({ error: 'Exam type is required.' }, { status: 400 })
+    return NextResponse.json({ error: `Exam type is required — received: "${examType}"` }, { status: 400 })
   if (!subject?.trim())
-    return NextResponse.json({ error: 'Subject is required.' }, { status: 400 })
+    return NextResponse.json({ error: `Subject is required — received: "${subject}"` }, { status: 400 })
   if (!answers || typeof answers !== 'object' || !Object.keys(answers).length)
     return NextResponse.json({ error: 'No answers were submitted.' }, { status: 400 })
 
