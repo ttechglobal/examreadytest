@@ -9,143 +9,155 @@ function getSupabase() {
   )
 }
 
-function scoreSession({ questions, answers, questionIds }) {
-  const questionMap = new Map(questions.map(q => [q.id, q]))
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
-  const questionReview = questionIds.map((qId, index) => {
-    const q           = questionMap.get(qId)
-    const studentAns  = answers[qId] ?? null
-    const correctAns  = q?.correct_answer ?? null
-    const wasAnswered = studentAns !== null
-    const isCorrect   = wasAnswered && studentAns === correctAns
+function score(questions, answers, questionIds) {
+  const map = new Map(questions.map(q => [q.id, q]))
+
+  const review = questionIds.map((id, i) => {
+    const q          = map.get(id)
+    const student    = answers[id] ?? null
+    const correct    = q?.correct_answer ?? null
+    const answered   = student !== null
+    const isCorrect  = answered && student === correct
     return {
-      index: index + 1, questionId: qId,
+      index:         i + 1,
+      questionId:    id,
       questionText:  q?.question_text ?? '',
-      optionA: q?.option_a ?? '', optionB: q?.option_b ?? '',
-      optionC: q?.option_c ?? '', optionD: q?.option_d ?? '',
-      correctAnswer: correctAns, studentAnswer: studentAns,
-      wasAnswered, isCorrect,
-      explanation: q?.explanation ?? '',
-      topicId:     q?.topic_id    ?? null,
-      topicTitle:  q?.topic_title ?? '',
-      difficulty:  q?.difficulty  ?? 'medium',
+      optionA:       q?.option_a      ?? '',
+      optionB:       q?.option_b      ?? '',
+      optionC:       q?.option_c      ?? '',
+      optionD:       q?.option_d      ?? '',
+      correctAnswer: correct,
+      studentAnswer: student,
+      wasAnswered:   answered,
+      isCorrect,
+      explanation:   q?.explanation   ?? '',
+      topicId:       q?.topic_id      ?? null,
+      topicTitle:    q?.topic_title   ?? '',
+      difficulty:    q?.difficulty    ?? 'medium',
     }
   })
 
-  const totalQuestions = questionIds.length
-  const score          = questionReview.filter(q => q.isCorrect).length
-  const percentage     = totalQuestions > 0
-    ? parseFloat(((score / totalQuestions) * 100).toFixed(2)) : 0
+  const total      = questionIds.length
+  const correct    = review.filter(r => r.isCorrect).length
+  const percentage = total > 0 ? parseFloat(((correct / total) * 100).toFixed(2)) : 0
 
+  // Topic breakdown
   const topicMap = new Map()
-  questionReview.forEach(q => {
-    if (!q.topicId) return
-    if (!topicMap.has(q.topicId)) topicMap.set(q.topicId, { topicId: q.topicId, topicTitle: q.topicTitle, qs: [] })
-    topicMap.get(q.topicId).qs.push(q)
+  review.forEach(r => {
+    if (!r.topicId) return
+    if (!topicMap.has(r.topicId)) topicMap.set(r.topicId, { topicId: r.topicId, topicTitle: r.topicTitle, items: [] })
+    topicMap.get(r.topicId).items.push(r)
   })
 
   const topicResults = Array.from(topicMap.values()).map(t => {
-    const total = t.qs.length
-    const correct = t.qs.filter(q => q.isCorrect).length
-    const pct = Math.round((correct / total) * 100)
-    return { topicId: t.topicId, topicTitle: t.topicTitle, correct, total, percentage: pct,
-      status: pct >= 70 ? 'strong' : pct >= 40 ? 'needs_work' : 'critical' }
+    const tot = t.items.length
+    const cor = t.items.filter(r => r.isCorrect).length
+    const pct = Math.round((cor / tot) * 100)
+    return {
+      topicId: t.topicId, topicTitle: t.topicTitle,
+      correct: cor, total: tot, percentage: pct,
+      status: pct >= 70 ? 'strong' : pct >= 40 ? 'needs_work' : 'critical',
+    }
   }).sort((a, b) => a.percentage - b.percentage)
 
-  const recommendations = topicResults.filter(t => t.status !== 'strong').slice(0, 3).map(t => ({
-    topicId: t.topicId, topicTitle: t.topicTitle, priority: t.status === 'critical' ? 1 : 2,
-    message: t.status === 'critical'
-      ? `Focus on ${t.topicTitle} first — you missed most questions here.`
-      : `Review ${t.topicTitle} — there are gaps in your understanding.`,
-  }))
+  const recommendations = topicResults
+    .filter(t => t.status !== 'strong')
+    .slice(0, 3)
+    .map(t => ({
+      topicId: t.topicId, topicTitle: t.topicTitle,
+      priority: t.status === 'critical' ? 1 : 2,
+      message: t.status === 'critical'
+        ? `Focus on ${t.topicTitle} first — you missed most questions here.`
+        : `Review ${t.topicTitle} — there are gaps in your understanding.`,
+    }))
 
-  return { totalQuestions, score, percentage, topicResults, recommendations, questionReview }
-}
-
-function scoreFallback({ questions, answers }) {
-  // When submitted IDs don't match DB — score using DB questions as the test
-  // answers won't match but we save correctly and student sees results
-  const safeAnswers = answers || {}
-  const questionIds = questions.map(q => q.id)
-  return scoreSession({ questions, answers: safeAnswers, questionIds })
+  return { total, correct, percentage, topicResults, recommendations, review }
 }
 
 export async function POST(request) {
+  // Parse
   let body
   try { body = await request.json() }
-  catch (e) { return NextResponse.json({ error: 'Invalid JSON', detail: String(e) }, { status: 400 }) }
+  catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }) }
 
-  const {
-    studentName, examType, subject,
-    answers    = {},
-    questionIds = [],
-    timeTaken, cohortId, schoolStudentId,
-  } = body
+  const { studentName, examType, subject, answers = {}, questionIds = [], timeTaken, cohortId, schoolStudentId } = body
 
-  if (!studentName?.trim()) return NextResponse.json({ error: 'studentName is required' }, { status: 400 })
-  if (!examType?.trim())    return NextResponse.json({ error: 'examType is required' }, { status: 400 })
-  if (!subject?.trim())     return NextResponse.json({ error: 'subject is required' }, { status: 400 })
+  // Validate
+  if (!studentName?.trim()) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+  if (!examType?.trim())    return NextResponse.json({ error: 'Exam type is required' }, { status: 400 })
+  if (!subject?.trim())     return NextResponse.json({ error: 'Subject is required' }, { status: 400 })
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL)  return NextResponse.json({ error: 'Missing env: NEXT_PUBLIC_SUPABASE_URL' }, { status: 500 })
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return NextResponse.json({ error: 'Missing env: SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 })
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+  }
 
-  const safeAnswers  = typeof answers === 'object' && answers !== null ? answers : {}
-  const supabase     = getSupabase()
-  const normSubject  = subject.trim().toLowerCase()
-  const normExamType = examType.trim().toUpperCase()
+  const supabase      = getSupabase()
+  const safeAnswers   = typeof answers === 'object' && answers !== null ? answers : {}
+  const normSubject   = subject.trim().toLowerCase()
+  const normExamType  = examType.trim().toUpperCase()
 
-  let finalQuestions = []
-  let usedFallback   = false
+  // Determine which questions to fetch
+  // Priority: use submitted questionIds (the exact 40 the student saw)
+  // Fallback: fetch by subject+examType and pick 40 (handles stale IDs)
+  let questions = []
 
-  // Try 1: fetch exactly the submitted IDs
   if (Array.isArray(questionIds) && questionIds.length > 0) {
     const { data } = await supabase
       .from('questions')
       .select('id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation, topic_id, topic_title, difficulty')
       .in('id', questionIds)
-    finalQuestions = data || []
+    questions = data || []
   }
 
-  // Try 2: IDs not found — fetch by subject+examType (student gets correct questions from live DB)
-  if (finalQuestions.length === 0) {
-    usedFallback = true
+  // Fallback: submitted IDs not found — fetch from DB and use those
+  if (questions.length === 0) {
     const { data } = await supabase
       .from('questions')
       .select('id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation, topic_id, topic_title, difficulty')
       .eq('subject_id', normSubject)
-      .eq('exam_type', normExamType)
-      .eq('verified', true)
-    finalQuestions = data || []
+      .eq('exam_type',  normExamType)
+      .eq('verified',   true)
+    questions = shuffle(data || []).slice(0, 40) // ALWAYS cap at 40
   }
 
-  // Still nothing — genuine error
-  if (finalQuestions.length === 0) {
-    return NextResponse.json({
-      error: `No questions found for ${normExamType} ${normSubject}. Please check that questions have been uploaded for this subject.`,
-    }, { status: 400 })
+  if (questions.length === 0) {
+    return NextResponse.json({ error: `No questions found for ${normExamType} ${normSubject}` }, { status: 400 })
   }
 
-  // Score — if fallback, answers won't match (score = 0) but session saves correctly
-  const idsToScore = usedFallback
-    ? finalQuestions.map(q => q.id)   // use DB IDs
-    : questionIds                      // use submitted IDs (matched)
+  // Use submitted IDs if they matched, otherwise use the fetched question IDs
+  // Always cap at 40
+  const idsToScore = (
+    questionIds.length > 0 && questions.length > 0 && questions.some(q => questionIds.includes(q.id))
+      ? questionIds
+      : questions.map(q => q.id)
+  ).slice(0, 40)
 
-  const scored = scoreSession({ questions: finalQuestions, answers: safeAnswers, questionIds: idsToScore })
+  const scored = score(questions, safeAnswers, idsToScore)
 
+  // Save session
   const { data: session, error: sErr } = await supabase
     .from('exam_sessions')
     .insert({
       student_name:      studentName.trim().slice(0, 60),
       exam_type:         normExamType,
       subject:           normSubject,
-      total_questions:   scored.totalQuestions,
-      score:             scored.score,
+      total_questions:   scored.total,
+      score:             scored.correct,
       percentage:        scored.percentage,
       time_taken:        typeof timeTaken === 'number' ? timeTaken : null,
       topic_results:     scored.topicResults,
       recommendations:   scored.recommendations,
       answers:           safeAnswers,
-      question_review:   scored.questionReview,
+      question_review:   scored.review,
       cohort_id:         cohortId        || null,
       school_student_id: schoolStudentId || null,
     })
@@ -153,25 +165,26 @@ export async function POST(request) {
     .single()
 
   if (sErr) {
-    return NextResponse.json({ error: 'Session insert failed', detail: sErr.message, code: sErr.code }, { status: 500 })
+    return NextResponse.json({ error: `Failed to save session: ${sErr.message}` }, { status: 500 })
   }
 
+  // Save attempts (non-blocking)
   supabase.from('question_attempts')
-    .insert(scored.questionReview.map(q => ({
+    .insert(scored.review.map(r => ({
       session_id:      session.id,
-      question_id:     q.questionId,
-      selected_answer: q.studentAnswer || null,
-      is_correct:      q.isCorrect,
+      question_id:     r.questionId,
+      selected_answer: r.studentAnswer || null,
+      is_correct:      r.isCorrect,
     })))
     .then(() => {}).catch(() => {})
 
   return NextResponse.json({
     shareToken:      session.share_token,
-    score:           scored.score,
-    totalQuestions:  scored.totalQuestions,
+    score:           scored.correct,
+    totalQuestions:  scored.total,
     percentage:      scored.percentage,
     topicResults:    scored.topicResults,
     recommendations: scored.recommendations,
-    questionReview:  scored.questionReview,
+    questionReview:  scored.review,
   })
 }

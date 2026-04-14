@@ -138,8 +138,7 @@ function Calculator({ open, onClose }) {
 export default function TestPage() {
   const router = useRouter()
   const [setup, setSetup]           = useState(null)
-  const setupRef     = useRef(null)  // always-current — avoids stale closure in handleSubmit
-  const questionsRef  = useRef([])   // same — keeps questions current at submit time
+  const setupRef = useRef(null)
   const [questions, setQuestions]   = useState([])
   const [answers, setAnswers]       = useState({})
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -159,7 +158,7 @@ export default function TestPage() {
     setupRef.current = parsed  // keep ref in sync
     fetch(`/api/questions?subject=${encodeURIComponent(parsed.subject)}&examType=${parsed.examType}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => { setQuestions(d.questions); questionsRef.current = d.questions; setLoading(false) })
+      .then(d => { setQuestions(d.questions); setLoading(false) })
       .catch(() => { setError('Could not load questions. Please try again.'); setLoading(false) })
   }, [])
 
@@ -192,7 +191,7 @@ export default function TestPage() {
             examType:        (setupRef.current || setup)?.examType,
             subject:         (setupRef.current || setup)?.subject,
             answers,
-            questionIds:     (questionsRef.current.length > 0 ? questionsRef.current : questions).map(q => q.id),
+            questionIds:     questions.map(q => q.id),
             timeTaken:       seconds,
             cohortId:        (setupRef.current || setup)?.cohortId        || null,
             schoolStudentId: (setupRef.current || setup)?.schoolStudentId || null,
