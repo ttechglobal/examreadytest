@@ -170,6 +170,9 @@ FORMATTING RULES — apply to every section:
 6. NEVER use 1. 2. 3. numbered lists for key points — only for sequential steps in 🔢.
 
 TONE: Patient, warm, like a teacher explaining to a 16-year-old.
+
+For the optionHints field — these appear ONLY in study mode to guide students who pick wrong answers.
+Each hint should gently redirect the student's thinking without revealing the correct answer.
 Define every term. Never skip steps. Write units always.
 Use LaTeX for all math.
 
@@ -189,9 +192,22 @@ Return this exact JSON structure:
     "topic": "specific topic e.g. Newton's Laws of Motion",
     "difficulty": "easy" | "medium" | "hard",
     "explanation": "full structured explanation with all emoji sections",
+    "optionHints": {
+      "A": "one encouraging hint for a student who picked A wrong — nudges toward the answer without revealing it, max 20 words",
+      "B": "...",
+      "C": "...",
+      "D": "..."
+    },
     "diagramData": null
   }
 ]
+
+OPTION HINTS RULES:
+- Write one hint per wrong answer option only (skip the correct answer)
+- Tone: warm, Socratic, like a coach — "Think about what X really means..." not "Wrong, try again"
+- Never say which option is correct
+- Max 20 words each
+- Example: "Think about the direction of force — is it pushing towards the centre or away from it?"
 
 TOPIC NAMING — be specific:
 Not "Mechanics" → "Newton's Laws of Motion"
@@ -222,166 +238,96 @@ async function verifyAdminJWT(token) {
 }
 
 
-function buildUserMessage(q) {
-  return `Generate a full step-by-step explanation for this ${q.exam_type} ${q.subject_id} question.
-
-Question: ${q.question_text}
-
-Options:
-A) ${q.option_a}
-B) ${q.option_b}
-C) ${q.option_c}
-D) ${q.option_d}
-
-Correct answer: ${q.correct_answer}
-Topic: ${q.topic_title}
-Difficulty: ${q.difficulty}
-
-Use LaTeX for ALL mathematical expressions and chemical formulae.`
-}
-
-// POST — start a batch
 export async function POST(request) {
+  // Auth check
   const token = cookies().get('admin_token')?.value
   const payload = token ? await verifyAdminJWT(token).catch(() => null) : null
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 500 })
+  if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set in .env.local' }, { status: 500 })
 
   let body
   try { body = await request.json() }
   catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }) }
 
-  const { questionIds, uploadBatch } = body
+  const { questionId } = body
+  if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 })
 
   const supabase = createServerClient()
+  const { data: question, error: qErr } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('id', questionId)
+    .single()
 
-  // Fetch questions — either by IDs or by upload batch
-  let query = supabase.from('questions').select('*')
-  if (questionIds?.length) {
-    query = query.in('id', questionIds)
-  } else if (uploadBatch) {
-    query = query.eq('upload_batch', uploadBatch)
-  } else {
-    // Questions with empty/short explanations
-    query = query.or('explanation.is.null,explanation.eq.')
-    query = query.limit(100)
-  }
+  if (qErr || !question) return NextResponse.json({ error: 'Question not found' }, { status: 404 })
 
-  const { data: questions, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (!questions?.length) return NextResponse.json({ error: 'No questions found' }, { status: 404 })
+  const userMessage = `Generate a full step-by-step explanation for this ${question.exam_type} ${question.subject_id} question.
 
-  // Build batch requests for Anthropic Batches API
-  const requests = questions.map(q => ({
-    custom_id: q.id,
-    params: {
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      system: EXPLANATION_GENERATION_PROMPT,
-      messages: [{ role: 'user', content: buildUserMessage(q) }],
-    },
-  }))
+Question: ${question.question_text}
+
+Options:
+A) ${question.option_a}
+B) ${question.option_b}
+C) ${question.option_c}
+D) ${question.option_d}
+
+Correct answer: ${question.correct_answer}
+Topic: ${question.topic_title}
+Difficulty: ${question.difficulty}
+
+Generate the full explanation following the format in your instructions.
+Use LaTeX for ALL mathematical expressions, formulas, units, and chemical formulae.`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages/batches', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'message-batches-2024-09-24',
       },
-      body: JSON.stringify({ requests }),
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: EXPLANATION_GENERATION_PROMPT,
+        messages: [{ role: 'user', content: userMessage }],
+      }),
     })
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      return NextResponse.json({ error: `Anthropic Batches error: ${err.error?.message || res.status}` }, { status: 500 })
+      return NextResponse.json({ error: `Anthropic API error: ${err.error?.message || res.status}` }, { status: 500 })
     }
 
-    const batch = await res.json()
-    return NextResponse.json({
-      success:   true,
-      batchId:   batch.id,
-      total:     questions.length,
-      status:    batch.processing_status,
-    })
-  } catch (err) {
-    return NextResponse.json({ error: `Batch request failed: ${err.message}` }, { status: 500 })
-  }
-}
+    const data     = await res.json()
+    const explanation = data.content?.[0]?.text
+    if (!explanation) return NextResponse.json({ error: 'No explanation returned from API' }, { status: 500 })
 
-// GET — poll batch status and save results if complete
-export async function GET(request) {
-  const token = cookies().get('admin_token')?.value
-  const payload = token ? await verifyAdminJWT(token).catch(() => null) : null
-  if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { searchParams } = new URL(request.url)
-  const batchId = searchParams.get('batchId')
-  if (!batchId) return NextResponse.json({ error: 'batchId required' }, { status: 400 })
-
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 500 })
-
-  // Check batch status
-  const statusRes = await fetch(`https://api.anthropic.com/v1/messages/batches/${batchId}`, {
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'message-batches-2024-09-24',
-    },
-  })
-
-  if (!statusRes.ok) {
-    return NextResponse.json({ error: 'Could not fetch batch status' }, { status: 500 })
-  }
-
-  const batchStatus = await statusRes.json()
-
-  if (batchStatus.processing_status !== 'ended') {
-    return NextResponse.json({
-      status:   batchStatus.processing_status,
-      counts:   batchStatus.request_counts,
-      complete: false,
-    })
-  }
-
-  // Batch is done — fetch results and save to DB
-  const resultsRes = await fetch(batchStatus.results_url, {
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'message-batches-2024-09-24',
-    },
-  })
-
-  if (!resultsRes.ok) return NextResponse.json({ error: 'Could not fetch batch results' }, { status: 500 })
-
-  const supabase = createServerClient()
-  const text     = await resultsRes.text()
-  const lines    = text.split('\n').filter(Boolean)
-  let saved = 0; let failed = 0
-
-  for (const line of lines) {
+    // Parse optionHints from response if it returns JSON with hints
+    let optionHints = null
     try {
-      const result = JSON.parse(line)
-      if (result.result?.type === 'succeeded') {
-        const explanation = result.result.message.content?.[0]?.text
-        if (explanation && result.custom_id) {
-          await supabase
-            .from('questions')
-            .update({ explanation })
-            .eq('id', result.custom_id)
-          saved++
-        }
-      } else {
-        failed++
+      const parsed = JSON.parse(explanation)
+      if (parsed?.optionHints) {
+        optionHints = parsed.optionHints
       }
-    } catch { failed++ }
-  }
+    } catch {
+      // explanation is plain text — no hints embedded
+    }
 
-  return NextResponse.json({ complete: true, saved, failed, total: lines.length })
+    // Save back to the question
+    const updatePayload = optionHints
+      ? { explanation, option_hints: optionHints }
+      : { explanation }
+
+    await supabase
+      .from('questions')
+      .update(updatePayload)
+      .eq('id', questionId)
+
+    return NextResponse.json({ success: true, explanation, optionHints })
+  } catch (err) {
+    return NextResponse.json({ error: `Request failed: ${err.message}` }, { status: 500 })
+  }
 }

@@ -141,8 +141,8 @@ function PostCard({ post, meta, onUpvote }) {
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 4 }}>
         <button onClick={handleUpvote}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', fontSize: 13, color: upvoted ? meta.color : '#64748B', fontWeight: upvoted ? 700 : 400, transition: 'all 0.15s', transform: upvoted ? 'scale(1.05)' : 'scale(1)' }}>
-          ▲ {upvoteCount}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', fontSize: 13, color: upvoted ? '#E11D48' : '#64748B', fontWeight: upvoted ? 700 : 400, transition: 'all 0.15s', transform: upvoted ? 'scale(1.05)' : 'scale(1)' }}>
+          ♥ {upvoteCount}
         </button>
         <button onClick={() => { setShowReplies(v => !v); if (!showReplies) setReplyCount(0) }}
           style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', fontSize: 13, color: '#64748B' }}>

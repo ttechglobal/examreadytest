@@ -59,7 +59,7 @@ function PostCard({ post, showRoom = false }) {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, color: '#64748B' }}>
-          ▲ {post.upvotes || 0}
+          ♥ {post.upvotes || 0}
         </span>
         <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, color: '#64748B' }}>
           💬 {post.replyCount || 0} {post.replyCount === 1 ? 'reply' : 'replies'}

@@ -44,6 +44,7 @@ export default function SchoolLoginPage() {
       }
 
       router.push('/schools/dashboard')
+      router.refresh()
     } catch {
       setError('Network error. Please check your connection and try again.')
     } finally {
@@ -61,7 +62,7 @@ export default function SchoolLoginPage() {
 
         {/* Logo */}
         <Link href="/schools" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none', marginBottom: 32 }}>
-          <div style={{ width: 30, height: 30, background: '#2D3CE6', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 14 }}>E</div>
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#2D3CE6"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           <span style={{ fontWeight: 900, fontSize: 16, color: '#0A0A0A' }}>Exam Ready Test</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '2px 9px', borderRadius: 99 }}>Schools</span>
         </Link>

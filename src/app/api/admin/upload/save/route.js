@@ -118,6 +118,7 @@ export async function POST(request) {
       option_d:       cleanOptionText(q.optionD),
       correct_answer: q.correctAnswer?.trim().toUpperCase() || 'A',
       explanation:    q.explanation?.trim()    || '',
+      option_hints:   q.optionHints || null,
       difficulty:     ['easy','medium','hard'].includes(q.difficulty) ? q.difficulty : 'medium',
       high_frequency: false,
       verified:       true,   // EXPLICIT — never rely on DB default alone

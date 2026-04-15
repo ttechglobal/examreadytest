@@ -13,7 +13,7 @@ const MODES = [
   {
     id: 'exam',
     label: 'Exam Mode',
-    desc: '40 questions · 2-hour timer · Submit at the end',
+    desc: '40 questions · 30-minute timer · Real exam conditions',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.6"/>
@@ -24,7 +24,7 @@ const MODES = [
   {
     id: 'study',
     label: 'Study Mode',
-    desc: 'Custom questions · Instant feedback · Learn as you go',
+    desc: '20 questions · ~10 minutes · Instant feedback per question',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path d="M3 5h14M3 10h10M3 15h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
@@ -44,7 +44,7 @@ export default function SetupInner() {
   const [subject,     setSubject]     = useState(params.get('subject') || '')
   const [mode,        setMode]        = useState('exam')
   const [numQ,        setNumQ]        = useState(20)
-  const [timeLimit,   setTimeLimit]   = useState(30)
+  const [timeLimit,   setTimeLimit]   = useState(10)
   const [nameError,   setNameError]   = useState('')
   const [mounted,     setMounted]     = useState(false)
   const [subjects,    setSubjects]    = useState([])
@@ -73,7 +73,7 @@ export default function SetupInner() {
       examType,
       subject,
       mode,
-      ...(mode === 'exam'  && { questionCount: 40,   timeLimit: 7200 }),
+      ...(mode === 'exam'  && { questionCount: 40,   timeLimit: 1800 }),
       ...(mode === 'study' && { questionCount: numQ, timeLimit: timeLimit * 60 }),
     }
     sessionStorage.setItem('learniie_setup', JSON.stringify(setup))

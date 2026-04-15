@@ -2,10 +2,8 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { getSessions, clearSessions } from '@/lib/storage/sessions'
-import { formatDate } from '@/lib/utils/format'
 import { getReadiness } from '@/lib/utils/constants'
 
-// ─── Logo (consistent across all pages) ───────────────────────
 export function AppLogo({ size = 28 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
@@ -15,113 +13,80 @@ export function AppLogo({ size = 28 }) {
   )
 }
 
-// ─── Scroll reveal ─────────────────────────────────────────────
 function useReveal() {
   const ref = useRef(null)
-  const [visible, setVisible] = useState(false)
+  const [v, setV] = useState(false)
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect() } }, { threshold: 0.1 })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
+    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setV(true); o.disconnect() } }, { threshold: 0.1 })
+    if (ref.current) o.observe(ref.current)
+    return () => o.disconnect()
   }, [])
-  return [ref, visible]
+  return [ref, v]
 }
 function Reveal({ children, delay = 0 }) {
-  const [ref, visible] = useReveal()
+  const [ref, v] = useReveal()
   return (
-    <div ref={ref} style={{ transition: `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`, opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(20px)' }}>
+    <div ref={ref} style={{ transition: `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`, opacity: v ? 1 : 0, transform: v ? 'none' : 'translateY(20px)' }}>
       {children}
     </div>
   )
 }
 
-// ─── Nav ───────────────────────────────────────────────────────
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
-  const [open, setOpen]         = useState(false)
+  const [open, setOpen] = useState(false)
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  const links = [
-    { href: '#features', label: 'Features' },
-    { href: '/schools',  label: 'Schools' },
-    { href: '/community',label: 'Community' },
-  ]
-
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-      background: 'rgba(255,255,255,0.97)',
-      backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid #E8EAED',
-      boxShadow: scrolled ? '0 1px 8px rgba(0,0,0,0.06)' : 'none',
-      transition: 'box-shadow 0.25s',
-    }}>
+    <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E8EAED', boxShadow: scrolled ? '0 1px 8px rgba(0,0,0,0.06)' : 'none', transition: 'box-shadow 0.25s' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Brand */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
           <AppLogo/>
-          <span style={{ fontWeight: 900, fontSize: 15, color: '#0A0A0A', letterSpacing: '-0.2px' }}>Exam Ready Test</span>
+          <span style={{ fontWeight: 900, fontSize: 15, color: '#0A0A0A' }}>Exam Ready Test</span>
         </Link>
-
-        {/* Desktop links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }} className="hidden-mobile">
-          {links.map(l => (
-            <a key={l.href} href={l.href} style={{ fontSize: 14, fontWeight: 600, color: '#52525B', textDecoration: 'none' }}
-              onMouseEnter={e => e.target.style.color = '#0A0A0A'} onMouseLeave={e => e.target.style.color = '#52525B'}>
-              {l.label}
-            </a>
+        {/* Desktop */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="nav-desktop">
+          {[['#features','Features'],['/community','Community']].map(([h,l]) => (
+            <a key={l} href={h} style={{ fontSize: 14, fontWeight: 600, color: '#52525B', textDecoration: 'none', padding: '7px 12px', borderRadius: 8, transition: 'color 0.15s, background 0.15s' }}
+              onMouseEnter={e=>{e.currentTarget.style.color='#0A0A0A';e.currentTarget.style.background='#F8FAFC'}} onMouseLeave={e=>{e.currentTarget.style.color='#52525B';e.currentTarget.style.background='none'}}>{l}</a>
           ))}
-        </div>
-
-        {/* Desktop CTA */}
-        <div className="hidden-mobile">
-          <Link href="/setup" style={{ fontSize: 14, fontWeight: 800, color: '#fff', background: '#2D3CE6', padding: '9px 20px', borderRadius: 9, textDecoration: 'none', letterSpacing: '-0.1px' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#1e2cc0'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#2D3CE6'; e.currentTarget.style.transform = 'none' }}>
-            Start Test →
+          <Link href="/schools" style={{ fontSize: 14, fontWeight: 600, color: '#52525B', textDecoration: 'none', padding: '7px 12px', borderRadius: 8, transition: 'color 0.15s, background 0.15s' }}
+            onMouseEnter={e=>{e.currentTarget.style.color='#2D3CE6';e.currentTarget.style.background='#EEF0FD'}} onMouseLeave={e=>{e.currentTarget.style.color='#52525B';e.currentTarget.style.background='none'}}>
+            For schools →
+          </Link>
+          <Link href="/setup" style={{ fontSize: 14, fontWeight: 800, color: '#fff', background: '#2D3CE6', padding: '9px 20px', borderRadius: 9, textDecoration: 'none', marginLeft: 4, transition: 'all 0.15s' }}
+            onMouseEnter={e=>{e.currentTarget.style.background='#1e2cc0';e.currentTarget.style.transform='translateY(-1px)'}} onMouseLeave={e=>{e.currentTarget.style.background='#2D3CE6';e.currentTarget.style.transform='none'}}>
+            Start Free Test →
           </Link>
         </div>
-
         {/* Hamburger */}
-        <button onClick={() => setOpen(o => !o)} className="show-mobile"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: '#374151' }}
-          aria-label="Menu">
+        <button onClick={() => setOpen(o => !o)} className="nav-mobile" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: '#374151' }} aria-label="Menu">
           {open
             ? <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             : <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
           }
         </button>
       </div>
-
-      {/* Mobile menu */}
+      {/* Mobile drawer */}
       {open && (
-        <div style={{ background: '#fff', borderTop: '1px solid #F1F5F9', padding: '16px 20px 20px' }} className="show-mobile">
-          {links.map(l => (
-            <a key={l.href} href={l.href} onClick={() => setOpen(false)}
-              style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#374151', textDecoration: 'none', padding: '11px 0', borderBottom: '1px solid #F8FAFC' }}>
-              {l.label}
-            </a>
+        <div style={{ background: '#fff', borderTop: '1px solid #F1F5F9', padding: '12px 20px 20px' }} className="nav-mobile">
+          {[['#features','Features'],['/community','Community'],['/schools','For schools']].map(([h,l]) => (
+            <a key={l} href={h} onClick={() => setOpen(false)} style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#374151', textDecoration: 'none', padding: '12px 0', borderBottom: '1px solid #F8FAFC' }}>{l}</a>
           ))}
-          <Link href="/setup" onClick={() => setOpen(false)}
-            style={{ display: 'block', marginTop: 14, textAlign: 'center', fontSize: 15, fontWeight: 800, color: '#fff', background: '#2D3CE6', padding: '13px 0', borderRadius: 10, textDecoration: 'none' }}>
-            Start Test →
+          <Link href="/setup" onClick={() => setOpen(false)} style={{ display: 'block', marginTop: 14, textAlign: 'center', fontSize: 15, fontWeight: 800, color: '#fff', background: '#2D3CE6', padding: '13px 0', borderRadius: 10, textDecoration: 'none' }}>
+            Start Free Test →
           </Link>
         </div>
       )}
-
-      <style>{`
-        @media (min-width: 640px) { .hidden-mobile { display: flex !important; } .show-mobile { display: none !important; } }
-        @media (max-width: 639px) { .hidden-mobile { display: none !important; } .show-mobile { display: block !important; } }
-      `}</style>
+      <style>{`@media(min-width:640px){.nav-mobile{display:none!important}.nav-desktop{display:flex!important}}@media(max-width:639px){.nav-desktop{display:none!important}.nav-mobile{display:block!important}}`}</style>
     </nav>
   )
 }
 
-// ─── Product illustration ──────────────────────────────────────
 function Illustration() {
   return (
     <div style={{ width: '100%', maxWidth: 480, margin: '0 auto' }}>
@@ -131,7 +96,6 @@ function Illustration() {
           <filter id="sh"><feDropShadow dx="0" dy="6" stdDeviation="14" floodColor="#00000012"/></filter>
         </defs>
         <ellipse cx="240" cy="220" rx="192" ry="178" fill="#EEF0FE" opacity="0.5"/>
-        {/* Question card */}
         <g className="fa" filter="url(#sh)">
           <rect x="60" y="50" width="240" height="186" rx="18" fill="white"/>
           <rect x="60" y="50" width="240" height="42" rx="18" fill="#2D3CE6"/>
@@ -139,7 +103,7 @@ function Illustration() {
           <text x="180" y="76" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="700" fontFamily="Nunito" letterSpacing="1">PHYSICS · JAMB</text>
           <text x="80" y="118" fill="#0A0A0A" fontSize="9.5" fontWeight="700" fontFamily="Nunito">Which wave requires a medium</text>
           <text x="80" y="132" fill="#0A0A0A" fontSize="9.5" fontWeight="700" fontFamily="Nunito">to propagate?</text>
-          {[['A','Electromagnetic',false,152],['B','Longitudinal waves',true,172],['C','Transverse waves',false,192],['D','Radio waves',false,212]].map(([l,t,sel,y]) => (
+          {[['A','Electromagnetic',false,152],['B','Longitudinal waves',true,172],['C','Transverse waves',false,192],['D','Radio waves',false,212]].map(([l,t,sel,y])=>(
             <g key={l}>
               <rect x="76" y={y-10} width="206" height="16" rx="8" fill={sel ? '#2D3CE6' : '#F8FAFC'}/>
               <rect x="79" y={y-8} width="12" height="12" rx="6" fill={sel ? 'rgba(255,255,255,0.2)' : '#E2E8F0'}/>
@@ -148,7 +112,6 @@ function Illustration() {
             </g>
           ))}
         </g>
-        {/* Score card */}
         <g className="fb" filter="url(#sh)">
           <rect x="266" y="38" width="178" height="140" rx="16" fill="white"/>
           <rect x="266" y="38" width="178" height="34" rx="16" fill="#0F172A"/>
@@ -161,7 +124,6 @@ function Illustration() {
           <rect x="308" y="155" width="94" height="18" rx="9" fill="#EEF0FE"/>
           <text x="355" y="168" textAnchor="middle" fill="#2D3CE6" fontSize="8" fontWeight="800" fontFamily="Nunito">Almost Ready</text>
         </g>
-        {/* Topic card */}
         <g className="fc" filter="url(#sh)">
           <rect x="30" y="254" width="200" height="162" rx="16" fill="white"/>
           <text x="50" y="280" fill="#0A0A0A" fontSize="11" fontWeight="800" fontFamily="Nunito">Topic Breakdown</text>
@@ -174,7 +136,6 @@ function Illustration() {
             </g>
           ))}
         </g>
-        {/* Exam badges */}
         <g style={{animation:'floatA 4s ease-in-out infinite 1.2s'}}>
           <rect x="24" y="196" width="52" height="26" rx="13" fill="#2D3CE6"/>
           <text x="50" y="213" textAnchor="middle" fill="white" fontSize="10" fontWeight="800" fontFamily="Nunito">JAMB</text>
@@ -188,24 +149,22 @@ function Illustration() {
   )
 }
 
-// ─── Features ──────────────────────────────────────────────────
 const FEATURES = [
-  { icon: '📝', title: 'Real past questions',        body: 'Actual JAMB and WAEC questions from previous years — not generated or paraphrased.' },
-  { icon: '🎯', title: 'Topic-level breakdown',      body: 'See exactly which topics need work, ranked by your performance.' },
-  { icon: '💡', title: 'Step-by-step explanations',  body: 'Every answer comes with a full worked explanation so you understand why.' },
-  { icon: '📊', title: 'Study recommendations',      body: 'Personalised list of what to revise next, based on your weakest topics.' },
-  { icon: '📤', title: 'Shareable results',           body: 'Send your result link to friends, teachers, or parents.' },
-  { icon: '⚡', title: 'No account needed',           body: 'Just your name. Start in 10 seconds. Free forever.' },
+  { icon: '📝', title: 'Real past questions',         body: 'Practice with actual JAMB and WAEC past questions — not made-up samples.' },
+  { icon: '🎯', title: 'Topic-by-topic analysis',     body: 'See which topics you\'ve mastered and which ones are costing you marks.' },
+  { icon: '💡', title: 'Step-by-step explanations',   body: 'Every answer explained simply — even if you\'ve never studied that topic before.' },
+  { icon: '📊', title: 'Ranked study recommendations', body: 'Get a prioritised list of exactly what to study next based on your results.' },
+  { icon: '📤', title: 'Shareable results',            body: 'Share your readiness score with classmates and challenge them to beat it.' },
+  { icon: '⚡', title: 'No account needed',            body: 'Enter your name, pick a subject, start testing. Done in 10 seconds.' },
 ]
 
-// ─── Community section ─────────────────────────────────────────
 function CommunitySection() {
-  const [feed, setFeed]       = useState([])
+  const [feed, setFeed] = useState([])
   const [message, setMessage] = useState('')
-  const [name, setName]       = useState('')
-  const [room, setRoom]       = useState('jamb')
+  const [name, setName] = useState('')
+  const [room, setRoom] = useState('jamb')
   const [posting, setPosting] = useState(false)
-  const [posted, setPosted]   = useState(false)
+  const [posted, setPosted] = useState(false)
 
   useEffect(() => {
     fetch('/api/community/feed').then(r => r.json()).then(d => setFeed((d.posts || []).slice(0, 2))).catch(() => {})
@@ -221,28 +180,28 @@ function CommunitySection() {
         body: JSON.stringify({ displayName: name || 'Anonymous', content: message, postType: 'general' }),
       })
       if (res.ok) { setPosted(true); setMessage(''); setTimeout(() => { window.location.href = `/community/${room}` }, 900) }
-    } catch {}
-    finally { setPosting(false) }
+    } catch {} finally { setPosting(false) }
   }
 
   return (
     <section style={{ background: '#F5F7FF', padding: '80px 20px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <Reveal>
-          <h2 style={{ fontWeight: 900, fontSize: 'clamp(24px,4vw,36px)', color: '#0A0A0A', letterSpacing: '-0.5px', marginBottom: 10 }}>
-            You're not studying alone.
+          <h2 style={{ fontWeight: 900, fontSize: 'clamp(26px,4vw,38px)', color: '#0A0A0A', letterSpacing: '-0.5px', marginBottom: 10 }}>
+            Don't study alone.
           </h2>
-          <p style={{ fontWeight: 500, fontSize: 16, color: '#52525B', maxWidth: 460, marginBottom: 48, lineHeight: 1.7 }}>
-            Thousands of students preparing for the same exams. Share tips, ask questions, swap strategies.
+          <p style={{ fontWeight: 500, fontSize: 16, color: '#52525B', maxWidth: 480, marginBottom: 48, lineHeight: 1.7 }}>
+            Connect with thousands of students preparing for JAMB and WAEC. Share tips, ask questions, see how others are preparing.
           </p>
         </Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,400px),1fr))', gap: 24 }}>
           <div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
-              {[['jamb','JAMB','#2D3CE6'],['waec','WAEC','#16A34A']].map(([id,label,color])=>(
-                <Link key={id} href={`/community/${id}`} style={{ flex: 1, textAlign: 'center', padding: '12px 0', border: `1.5px solid ${color}33`, borderRadius: 11, background: '#fff', fontWeight: 800, fontSize: 14, color, textDecoration: 'none' }}
-                  onMouseEnter={e=>{e.currentTarget.style.background=color+'18'}} onMouseLeave={e=>{e.currentTarget.style.background='#fff'}}>
-                  {label} Community →
+              {[['jamb','JAMB Community','Students preparing for Joint Admissions →','#2D3CE6'],['waec','WAEC Community','West African Examinations Council →','#16A34A']].map(([id,label,sub,color])=>(
+                <Link key={id} href={`/community/${id}`} style={{ flex: 1, padding: '12px 14px', border: `1.5px solid ${color}33`, borderRadius: 11, background: '#fff', textDecoration: 'none', transition: 'all 0.15s' }}
+                  onMouseEnter={e=>{e.currentTarget.style.background=color+'12';e.currentTarget.style.borderColor=color+'66'}} onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.borderColor=color+'33'}}>
+                  <p style={{ fontWeight: 800, fontSize: 13, color, margin: '0 0 3px' }}>{label}</p>
+                  <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>{sub}</p>
                 </Link>
               ))}
             </div>
@@ -250,9 +209,7 @@ function CommunitySection() {
               <div style={{ background: '#fff', border: '1px solid #E8EAED', borderRadius: 12, overflow: 'hidden' }}>
                 {feed.map((post, i) => (
                   <div key={post.id} style={{ padding: '13px 16px', borderBottom: i < feed.length-1 ? '1px solid #F8FAFC' : 'none' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontWeight: 700, fontSize: 13, color: '#0A0A0A' }}>{post.display_name}</span>
-                    </div>
+                    <p style={{ fontWeight: 700, fontSize: 13, color: '#0A0A0A', margin: '0 0 4px' }}>{post.display_name}</p>
                     <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, margin: 0 }}>{post.content?.slice(0, 100)}{post.content?.length > 100 ? '…' : ''}</p>
                   </div>
                 ))}
@@ -260,7 +217,8 @@ function CommunitySection() {
             )}
           </div>
           <div style={{ background: '#fff', border: '1.5px solid #DDE2FF', borderRadius: 14, padding: 24 }}>
-            <p style={{ fontWeight: 800, fontSize: 15, color: '#0A0A0A', marginBottom: 16 }}>Share something with the community</p>
+            <p style={{ fontWeight: 800, fontSize: 15, color: '#0A0A0A', marginBottom: 6 }}>What's on your mind?</p>
+            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>Post anonymously →</p>
             {posted ? (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
                 <p style={{ fontSize: 22, marginBottom: 8 }}>🎉</p>
@@ -273,14 +231,13 @@ function CommunitySection() {
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                   <select value={room} onChange={e => setRoom(e.target.value)}
                     style={{ fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, border: '1.5px solid #E2E8F0', borderRadius: 8, padding: '7px 10px', outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                    <option value="jamb">JAMB</option>
-                    <option value="waec">WAEC</option>
+                    <option value="jamb">JAMB</option><option value="waec">WAEC</option>
                   </select>
                   <input value={name} onChange={e => setName(e.target.value.slice(0, 40))} placeholder="Your name (optional)"
                     style={{ flex: 1, fontFamily: 'Nunito, sans-serif', fontSize: 13, border: '1.5px solid #E2E8F0', borderRadius: 8, padding: '7px 10px', outline: 'none' }}/>
                 </div>
                 <button type="submit" disabled={!message.trim() || posting}
-                  style={{ width: '100%', padding: '12px 0', border: 'none', borderRadius: 10, background: message.trim() ? '#2D3CE6' : '#E2E8F0', color: message.trim() ? '#fff' : '#94A3B8', fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 14, cursor: message.trim() ? 'pointer' : 'not-allowed' }}>
+                  style={{ width: '100%', padding: '12px 0', border: 'none', borderRadius: 10, background: message.trim() ? '#2D3CE6' : '#E2E8F0', color: message.trim() ? '#fff' : '#94A3B8', fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 14, cursor: message.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.15s' }}>
                   {posting ? 'Posting…' : 'Post anonymously →'}
                 </button>
               </form>
@@ -292,7 +249,6 @@ function CommunitySection() {
   )
 }
 
-// ─── Main page ─────────────────────────────────────────────────
 export default function LandingPage() {
   const [sessions, setSessions] = useState([])
   useEffect(() => { getSessions().then(setSessions).catch(() => {}) }, [])
@@ -303,38 +259,36 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section style={{ background: '#fff', paddingTop: 80 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 20px 80px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,360px),1fr))', gap: '48px 64px', alignItems: 'center' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 20px 80px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,340px),1fr))', gap: '48px 64px', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontWeight: 900, fontSize: 'clamp(36px,6vw,58px)', lineHeight: 1.04, letterSpacing: '-1.5px', color: '#0A0A0A', marginBottom: 20 }}>
-              Know exactly<br/>
-              <span style={{ color: '#2D3CE6' }}>where you stand.</span>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#2D3CE6', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>Free JAMB & WAEC exam preparation</p>
+            <h1 style={{ fontWeight: 900, fontSize: 'clamp(36px,6vw,56px)', lineHeight: 1.05, letterSpacing: '-1.5px', color: '#0A0A0A', marginBottom: 20 }}>
+              Find out if you're<br/>
+              <span style={{ color: '#2D3CE6' }}>ready for your exam.</span>
             </h1>
-            <p style={{ fontWeight: 500, fontSize: 17, color: '#52525B', lineHeight: 1.75, maxWidth: 400, marginBottom: 32 }}>
-              Take 40 past questions. Get a topic-by-topic breakdown of what you know and what needs work. Free. No sign-up.
+            <p style={{ fontWeight: 500, fontSize: 17, color: '#52525B', lineHeight: 1.75, maxWidth: 420, marginBottom: 36 }}>
+              Answer 40 real past questions. Get an instant breakdown of every topic — what you know, what you don't, and exactly what to study next. No sign-up. No guessing.
             </p>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 32, flexWrap: 'wrap', alignItems: 'center' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 600, fontSize: 13, padding: '5px 12px', borderRadius: 8, background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }}/>JAMB — Live
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 600, fontSize: 13, padding: '5px 12px', borderRadius: 8, background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }}/>WAEC — Live
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link href="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800, background: '#2D3CE6', color: '#fff', padding: '14px 28px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 20px rgba(45,60,230,0.22)' }}
-                onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 28px rgba(45,60,230,0.28)'}}
-                onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 4px 20px rgba(45,60,230,0.22)'}}>
-                Start your test →
-              </Link>
-              <Link href="/schools" style={{ fontSize: 14, fontWeight: 600, color: '#2D3CE6', textDecoration: 'none' }}>
-                For schools →
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 20 }}>
+              <Link href="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800, background: '#2D3CE6', color: '#fff', padding: '14px 28px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 20px rgba(45,60,230,0.22)', transition: 'all 0.15s' }}
+                onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 28px rgba(45,60,230,0.28)'}} onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 4px 20px rgba(45,60,230,0.22)'}}>
+                Test your readiness — it's free →
               </Link>
             </div>
-            <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 16 }}>Free · No sign-up · Results in minutes</p>
+            <Link href="/schools" style={{ fontSize: 14, fontWeight: 600, color: '#64748B', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'color 0.15s' }}
+              onMouseEnter={e=>e.currentTarget.style.color='#2D3CE6'} onMouseLeave={e=>e.currentTarget.style.color='#64748B'}>
+              Are you a school or tutorial centre? →
+            </Link>
+            <div style={{ display: 'flex', gap: 16, marginTop: 24, flexWrap: 'wrap' }}>
+              {[['JAMB','#22C55E','Live'],['WAEC','#22C55E','Live']].map(([exam,dot,label])=>(
+                <span key={exam} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 600, fontSize: 13, color: '#374151' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: dot, display: 'inline-block' }}/>
+                  {exam} — {label}
+                </span>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Illustration/>
-          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><Illustration/></div>
         </div>
       </section>
 
@@ -342,8 +296,8 @@ export default function LandingPage() {
       <section id="features" style={{ padding: '80px 20px', background: '#F8F9FA' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <Reveal>
-            <h2 style={{ fontWeight: 900, fontSize: 'clamp(24px,4vw,36px)', color: '#0A0A0A', letterSpacing: '-0.4px', textAlign: 'center', marginBottom: 12 }}>
-              Everything that helps.
+            <h2 style={{ fontWeight: 900, fontSize: 'clamp(26px,4vw,38px)', color: '#0A0A0A', letterSpacing: '-0.4px', textAlign: 'center', marginBottom: 10 }}>
+              Everything you need to prepare smarter.
             </h2>
             <p style={{ fontWeight: 500, fontSize: 16, color: '#64748B', textAlign: 'center', maxWidth: 440, margin: '0 auto 48px', lineHeight: 1.7 }}>
               Built for one purpose — helping Nigerian students know exactly where they stand before their exams.
@@ -351,8 +305,8 @@ export default function LandingPage() {
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 16 }}>
             {FEATURES.map((f, i) => (
-              <Reveal key={f.title} delay={i * 50}>
-                <div style={{ background: '#fff', border: '1.5px solid #E8EAED', borderRadius: 14, padding: '24px 22px', height: '100%', boxSizing: 'border-box', transition: 'all 0.15s' }}
+              <Reveal key={f.title} delay={i * 40}>
+                <div style={{ background: '#fff', border: '1.5px solid #E8EAED', borderRadius: 14, padding: '24px 22px', height: '100%', boxSizing: 'border-box', transition: 'all 0.15s', cursor: 'default' }}
                   onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';e.currentTarget.style.borderColor='#C7D2FE'}}
                   onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderColor='#E8EAED'}}>
                   <div style={{ fontSize: 24, marginBottom: 12 }}>{f.icon}</div>
@@ -375,10 +329,9 @@ export default function LandingPage() {
             <h2 style={{ fontWeight: 900, fontSize: 'clamp(26px,5vw,42px)', color: '#fff', lineHeight: 1.1, letterSpacing: '-0.7px', marginBottom: 14 }}>
               Ready to find out where you stand?
             </h2>
-            <p style={{ fontWeight: 500, fontSize: 16, color: '#6B7DB3', marginBottom: 36 }}>Free. No sign-up. Works on any phone.</p>
-            <Link href="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#fff', color: '#2D3CE6', fontWeight: 800, fontSize: 15, padding: '15px 32px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 32px rgba(0,0,0,0.28)' }}
-              onMouseEnter={e=>{e.currentTarget.style.background='#EEF0FE';e.currentTarget.style.transform='translateY(-2px)'}}
-              onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.transform='none'}}>
+            <p style={{ fontWeight: 500, fontSize: 16, color: '#6B7DB3', marginBottom: 36 }}>Free exam practice for every Nigerian student. No sign-up required.</p>
+            <Link href="/setup" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#fff', color: '#2D3CE6', fontWeight: 800, fontSize: 15, padding: '15px 32px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 32px rgba(0,0,0,0.28)', transition: 'all 0.15s' }}
+              onMouseEnter={e=>{e.currentTarget.style.background='#EEF0FE';e.currentTarget.style.transform='translateY(-2px)'}} onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.transform='none'}}>
               Start my test — it's free →
             </Link>
           </Reveal>
@@ -392,9 +345,9 @@ export default function LandingPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
                 <p style={{ fontWeight: 900, fontSize: 18, color: '#0A0A0A', margin: '0 0 3px' }}>Welcome back</p>
-                <p style={{ fontSize: 13, color: '#71717A', margin: 0 }}>Your recent sessions</p>
+                <p style={{ fontSize: 13, color: '#71717A', margin: 0 }}>Your last {Math.min(sessions.length, 3)} session{sessions.length > 1 ? 's' : ''}</p>
               </div>
-              <button onClick={() => { clearSessions(); setSessions([]) }} style={{ fontSize: 13, color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>
+              <button onClick={() => { clearSessions(); setSessions([]) }} style={{ fontSize: 13, color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}>Clear</button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {sessions.slice(0, 3).map(s => {
@@ -402,16 +355,18 @@ export default function LandingPage() {
                 const colors = { green: ['#DCFCE7','#16A34A'], blue: ['#EEF0FE','#2D3CE6'], amber: ['#FEF3C7','#D97706'], red: ['#FEE2E2','#DC2626'] }
                 const [bg, fg] = colors[r.color] || colors.blue
                 return (
-                  <Link key={s.shareToken} href={`/results/${s.shareToken}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', border: '1.5px solid #EBEBEB', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', transition: 'all 0.15s' }}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor='#2D3CE6';e.currentTarget.style.transform='translateY(-1px)'}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor='#EBEBEB';e.currentTarget.style.transform='none'}}>
+                  <Link key={s.shareToken} href={`/results/${s.shareToken}`}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', border: '1.5px solid #EBEBEB', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', transition: 'all 0.15s' }}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor='#2D3CE6';e.currentTarget.style.transform='translateY(-1px)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='#EBEBEB';e.currentTarget.style.transform='none'}}>
                     <div>
-                      <p style={{ fontWeight: 600, fontSize: 14, color: '#0A0A0A', margin: '0 0 3px' }}>{s.studentName}</p>
-                      <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>{s.examType} · {s.subject} · {formatDate(s.createdAt)}</p>
+                      <p style={{ fontWeight: 700, fontSize: 14, color: '#0A0A0A', margin: '0 0 4px', textTransform: 'capitalize' }}>{s.subject} · {s.examType}</p>
+                      <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>
+                        {s.score != null && s.totalQuestions != null ? `${s.score} / ${s.totalQuestions} correct` : 'View results'}
+                      </p>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontWeight: 900, fontSize: 18, color: '#0A0A0A', margin: '0 0 3px' }}>{Math.round(s.percentage)}%</p>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: bg, color: fg }}>{r.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: bg, color: fg }}>{Math.round(s.percentage)}%</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8' }}>View →</span>
                     </div>
                   </Link>
                 )
@@ -427,21 +382,17 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 40, marginBottom: 48 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
-                <AppLogo size={26}/>
+                <AppLogo size={24}/>
                 <span style={{ fontWeight: 900, fontSize: 14, color: '#fff' }}>Exam Ready Test</span>
               </div>
-              <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.65, margin: '0 0 14px', maxWidth: 200 }}>
-                Free exam readiness testing for every Nigerian student.
-              </p>
-              <p style={{ fontSize: 12, color: '#475569', margin: 0 }}>
-                A <a href="https://learniie.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2D3CE6', textDecoration: 'none' }}>Learniie</a> product
-              </p>
+              <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.65, margin: '0 0 14px', maxWidth: 200 }}>Free exam readiness testing for every Nigerian student.</p>
+              <p style={{ fontSize: 12, color: '#475569', margin: 0 }}>A <a href="https://learniie.com" target="_blank" rel="noopener noreferrer" style={{ color: '#2D3CE6', textDecoration: 'none' }}>Learniie</a> product</p>
             </div>
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 14 }}>Students</p>
               {[['/#features','How it works'],['/setup','Take a test'],['/community','Community']].map(([h,l]) => (
                 <div key={l} style={{ marginBottom: 10 }}>
-                  <a href={h} style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}
+                  <a href={h} style={{ fontSize: 13, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
                     onMouseEnter={e=>e.target.style.color='#fff'} onMouseLeave={e=>e.target.style.color='#64748B'}>{l}</a>
                 </div>
               ))}
@@ -450,7 +401,7 @@ export default function LandingPage() {
               <p style={{ fontSize: 11, fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 14 }}>Schools</p>
               {[['/schools','For schools'],['/schools/register','Register'],['/schools/login','Log in']].map(([h,l]) => (
                 <div key={l} style={{ marginBottom: 10 }}>
-                  <a href={h} style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}
+                  <a href={h} style={{ fontSize: 13, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
                     onMouseEnter={e=>e.target.style.color='#fff'} onMouseLeave={e=>e.target.style.color='#64748B'}>{l}</a>
                 </div>
               ))}
@@ -459,9 +410,8 @@ export default function LandingPage() {
           <div style={{ borderTop: '1px solid #1E293B', paddingTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
             <p style={{ fontSize: 12, color: '#475569', margin: 0 }}>© 2025 Exam Ready Test · Made with care for Nigerian students</p>
             <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              style={{ fontSize: 12, fontWeight: 700, color: '#64748B', background: 'none', border: '1px solid #334155', borderRadius: 7, padding: '5px 12px', cursor: 'pointer' }}
-              onMouseEnter={e=>{e.currentTarget.style.color='#fff';e.currentTarget.style.borderColor='#64748B'}}
-              onMouseLeave={e=>{e.currentTarget.style.color='#64748B';e.currentTarget.style.borderColor='#334155'}}>
+              style={{ fontSize: 12, fontWeight: 700, color: '#64748B', background: 'none', border: '1px solid #334155', borderRadius: 7, padding: '5px 12px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e=>{e.currentTarget.style.color='#fff';e.currentTarget.style.borderColor='#64748B'}} onMouseLeave={e=>{e.currentTarget.style.color='#64748B';e.currentTarget.style.borderColor='#334155'}}>
               ↑ Top
             </button>
           </div>

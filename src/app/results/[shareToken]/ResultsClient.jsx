@@ -316,6 +316,7 @@ export default function ResultsClient({ session, shareToken }) {
   const router = useRouter()
   const [toast,        setToast]        = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
+  const [showAllTopics, setShowAllTopics] = useState(false)
   const url       = typeof window !== 'undefined' ? window.location.href : `${process.env.NEXT_PUBLIC_APP_URL || ''}/results/${shareToken}`
   const readiness = getReadiness(session.percentage)
   const sorted    = [...(session.topic_results || session.topicResults || [])].sort((a, b) => a.percentage - b.percentage)
@@ -385,8 +386,17 @@ export default function ResultsClient({ session, shareToken }) {
         {/* Topic breakdown */}
         <div style={card}>
           <p style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 16, color: '#0A0A0A', marginBottom: 4 }}>Topic breakdown</p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#9CA3AF', marginBottom: 14 }}>Weakest topics first</p>
-          {sorted.map(t => <TopicRow key={t.topicId} topic={t} />)}
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#9CA3AF', marginBottom: 14 }}>Sorted by priority — focus on the red ones first.</p>
+          {(showAllTopics ? sorted : sorted.slice(0, 5)).map(t => <TopicRow key={t.topicId} topic={t} />)}
+          {sorted.length > 5 && (
+            <button
+              onClick={() => setShowAllTopics(s => !s)}
+              style={{ marginTop: 12, width: '100%', padding: '10px 24px', border: 'none', borderRadius: 50, background: '#EEF0FD', color: '#2D3CE6', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#E0E4FB'}
+              onMouseLeave={e => e.currentTarget.style.background = '#EEF0FD'}>
+              {showAllTopics ? 'Show less ↑' : `Show ${sorted.length - 5} more topic${sorted.length - 5 !== 1 ? 's' : ''} ↓`}
+            </button>
+          )}
         </div>
 
         {/* Recommendations */}
