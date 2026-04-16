@@ -9,7 +9,7 @@ import { ExplanationCard } from '@/components/exam/ExplanationCard'
 function Logo() {
   return (
     <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="7" fill="#2D3CE6"/>
+      <rect width="28" height="28" rx="7" fill="#1D6FEF"/>
       <path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
@@ -398,14 +398,14 @@ export default function TestPage() {
 
     const optStyles = {
       idle:        { border: '1.5px solid #E2E8F0', background: '#fff', color: '#1A1A1A', cursor: 'pointer' },
-      checking:    { border: '1.5px solid #A5B4FC', background: '#EEF0FE', color: '#1A1A1A', cursor: 'wait', opacity: 0.8 },
+      checking:    { border: '1.5px solid #A5B4FC', background: '#EBF2FE', color: '#1A1A1A', cursor: 'wait', opacity: 0.8 },
       correct:     { border: '2px solid #22C55E', background: '#F0FDF4', color: '#166534', cursor: 'default' },
       'wrong-final': { border: '1.5px solid #E2E8F0', background: '#fff', color: '#94A3B8', cursor: 'default', opacity: 0.5 },
       'idle-locked': { border: '1.5px solid #E2E8F0', background: '#fff', color: '#94A3B8', cursor: 'default', opacity: 0.5 },
     }
     const letterStyles = {
       idle:        { background: '#F1F5F9', color: '#64748B' },
-      checking:    { background: '#C7D2FE', color: '#2D3CE6' },
+      checking:    { background: '#C7D2FE', color: '#1D6FEF' },
       correct:     { background: '#22C55E', color: '#fff' },
       'wrong-final': { background: '#F1F5F9', color: '#94A3B8' },
       'idle-locked': { background: '#F1F5F9', color: '#94A3B8' },
@@ -421,7 +421,7 @@ export default function TestPage() {
             <button onClick={() => setExitModal(true)} style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: 8, padding: '5px 10px', fontSize: 13, fontWeight: 700, color: '#64748B', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
               ✕ Exit
             </button>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '3px 10px', borderRadius: 99 }}>Study Mode</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#1D6FEF', background: '#EBF2FE', padding: '3px 10px', borderRadius: 99 }}>Study Mode</span>
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, color: '#374151', fontFamily: 'Nunito, sans-serif' }}>Q {currentIdx + 1} / {questions.length}</span>
           <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', fontFamily: 'Nunito, sans-serif' }}>{answeredIds.length} answered</span>
@@ -438,7 +438,7 @@ export default function TestPage() {
               {/* Question header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Question {currentIdx + 1}</span>
-                {q.topicTitle && <span style={{ fontSize: 11, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '2px 10px', borderRadius: 99 }}>{q.topicTitle}</span>}
+                {q.topicTitle && <span style={{ fontSize: 11, fontWeight: 700, color: '#1D6FEF', background: '#EBF2FE', padding: '2px 10px', borderRadius: 99 }}>{q.topicTitle}</span>}
                 {studyAttempts > 0 && !studyCorrect && (
                   <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#D97706', background: '#FFF5E6', padding: '2px 10px', borderRadius: 99 }}>
                     Attempt {studyAttempts + 1}
@@ -534,8 +534,8 @@ export default function TestPage() {
                     )}
                   </div>
                   <button onClick={() => isLast ? handleSubmit() : setCurrentIdx(i => i + 1)}
-                    style={{ width: '100%', padding: '13px 0', border: 'none', borderRadius: 12, background: '#2D3CE6', color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', transition: 'background 0.15s' }}
-                    onMouseEnter={e=>e.currentTarget.style.background='#1e2cc0'} onMouseLeave={e=>e.currentTarget.style.background='#2D3CE6'}>
+                    style={{ width: '100%', padding: '13px 0', border: 'none', borderRadius: 12, background: '#1D6FEF', color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', transition: 'background 0.15s' }}
+                    onMouseEnter={e=>e.currentTarget.style.background='#1558CC'} onMouseLeave={e=>e.currentTarget.style.background='#1D6FEF'}>
                     {isLast ? 'Submit & see results →' : 'Next question →'}
                   </button>
                 </div>
@@ -585,8 +585,8 @@ export default function TestPage() {
           <span style={{
             fontSize: 13, fontWeight: 800, padding: '7px 14px', borderRadius: 99, tabularNums: 'true',
             fontFamily: 'Nunito, sans-serif', letterSpacing: '-0.2px',
-            background: timerDanger ? '#FEF2F2' : timerWarning ? '#FFF5E6' : '#EEF0FE',
-            color: timerDanger ? '#DC2626' : timerWarning ? '#D97706' : '#2D3CE6',
+            background: timerDanger ? '#FEF2F2' : timerWarning ? '#FFF5E6' : '#EBF2FE',
+            color: timerDanger ? '#DC2626' : timerWarning ? '#D97706' : '#1D6FEF',
             animation: timerDanger ? 'timerPulse 1s infinite' : 'none',
           }}>
             {isCountdown && '⏱ '}{formatTime(seconds)}

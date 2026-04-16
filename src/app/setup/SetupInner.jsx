@@ -107,7 +107,7 @@ export default function SetupInner() {
         <div className="flex items-center gap-3 mb-8">
           <Link href="/" className="flex items-center gap-2 text-dark no-underline">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect width="28" height="28" rx="7" fill="#2D3CE6"/>
+              <rect width="28" height="28" rx="7" fill="#1D6FEF"/>
               <path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span className="font-black text-[16px] text-dark">Exam Ready Test</span>

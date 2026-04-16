@@ -97,9 +97,9 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
               style={{
                 aspectRatio: '1', borderRadius: 7,
                 fontSize: 11, fontWeight: 700,
-                background: isCurrent ? '#2D3CE6' : bg,
+                background: isCurrent ? '#1D6FEF' : bg,
                 color: isCurrent ? '#fff' : color,
-                border: `1.5px solid ${isCurrent ? '#2D3CE6' : border}`,
+                border: `1.5px solid ${isCurrent ? '#1D6FEF' : border}`,
                 cursor: 'pointer', transition: 'all 0.1s',
                 opacity: isDimmed ? 0.3 : 1,
                 outline: isCurrent ? '2px solid #2D3CE6' : 'none',
@@ -132,9 +132,9 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
         {FILTERS.map(f => (
           <button key={f.id} onClick={() => onFilterChange(f.id)}
-            style={{ padding: '5px 11px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', border: `1.5px solid ${activeFilter === f.id ? '#2D3CE6' : '#E2E8F0'}`, background: activeFilter === f.id ? '#EEF0FE' : '#fff', color: activeFilter === f.id ? '#2D3CE6' : '#6B7280' }}>
+            style={{ padding: '5px 11px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', border: `1.5px solid ${activeFilter === f.id ? '#1D6FEF' : '#E2E8F0'}`, background: activeFilter === f.id ? '#EBF2FE' : '#fff', color: activeFilter === f.id ? '#1D6FEF' : '#6B7280' }}>
             {f.label}
-            <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 99, background: activeFilter === f.id ? '#2D3CE6' : '#F1F5F9', color: activeFilter === f.id ? '#fff' : '#94A3B8' }}>
+            <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 99, background: activeFilter === f.id ? '#1D6FEF' : '#F1F5F9', color: activeFilter === f.id ? '#fff' : '#94A3B8' }}>
               {counts[f.id]}
             </span>
           </button>
@@ -197,7 +197,7 @@ export default function ReviewClient({ session, shareToken }) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nunito, sans-serif', color: '#374151', flexDirection: 'column', gap: 16 }}>
         <p>No review data available.</p>
-        <Link href={`/results/${shareToken}`} style={{ color: '#2D3CE6', fontWeight: 700 }}>← Back to results</Link>
+        <Link href={`/results/${shareToken}`} style={{ color: '#1D6FEF', fontWeight: 700 }}>← Back to results</Link>
       </div>
     )
   }
@@ -253,7 +253,7 @@ export default function ReviewClient({ session, shareToken }) {
           {/* Topic + number */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
             {current.topicTitle && (
-              <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 99, background: '#EEF0FE', color: '#2D3CE6' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 99, background: '#EBF2FE', color: '#1D6FEF' }}>
                 {current.topicTitle}
               </span>
             )}
@@ -301,8 +301,8 @@ export default function ReviewClient({ session, shareToken }) {
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '10px 20px', borderRadius: 99,
                 border: '1.5px solid #2D3CE6',
-                background: showExplain ? '#2D3CE6' : '#fff',
-                color: showExplain ? '#fff' : '#2D3CE6',
+                background: showExplain ? '#1D6FEF' : '#fff',
+                color: showExplain ? '#fff' : '#1D6FEF',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
                 transition: 'all 0.15s', marginBottom: 14,
               }}
@@ -337,13 +337,13 @@ export default function ReviewClient({ session, shareToken }) {
 
             {isLast ? (
               <Link href={`/results/${shareToken}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: 'none', borderRadius: 10, background: '#2D3CE6', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: 'none', borderRadius: 10, background: '#1D6FEF', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none' }}>
                 Back to results
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Link>
             ) : (
               <button onClick={next}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: 'none', borderRadius: 10, background: '#2D3CE6', fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'all 0.15s' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: 'none', borderRadius: 10, background: '#1D6FEF', fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'all 0.15s' }}>
                 Next
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>

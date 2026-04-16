@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminTopbar } from '@/components/admin/AdminTopbar'
 import { MathText } from '@/components/ui/MathText'
@@ -220,6 +220,19 @@ export default function UploadPage() {
   const [warnings,   setWarnings]   = useState([])
   const [saved,      setSaved]      = useState(null)
   const [lastBatch,  setLastBatch]  = useState(null)
+  // Dynamic exam types — fetched from admin API, falls back to hardcoded
+  const [examTypes,  setExamTypes]  = useState(['JAMB','WAEC','NECO','BECE'])
+
+  useEffect(() => {
+    fetch('/api/admin/exam-types')
+      .then(r => r.json())
+      .then(d => {
+        if (d.examTypes?.length) {
+          setExamTypes(d.examTypes.filter(e => e.active).map(e => e.id))
+        }
+      })
+      .catch(() => { /* keep fallback */ })
+  }, [])
 
   const subjectLabel = SUBJECTS.find(s => s.id === subject)?.label || ''
 
@@ -295,10 +308,10 @@ export default function UploadPage() {
 
                 <div style={{ marginBottom: 20 }}>
                   <label style={lbl}>Exam type *</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {['JAMB','WAEC','NECO'].map(e => (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {examTypes.map(e => (
                       <button key={e} onClick={() => setExamType(e)}
-                        style={{ flex: 1, padding: '11px 0', border: `1.5px solid ${examType === e ? '#2D3CE6' : '#E2E8F0'}`, borderRadius: 10, background: examType === e ? '#EEF0FE' : '#fff', color: examType === e ? '#2D3CE6' : '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.15s' }}>
+                        style={{ padding: '11px 18px', border: `1.5px solid ${examType === e ? '#2D3CE6' : '#E2E8F0'}`, borderRadius: 10, background: examType === e ? '#EEF0FE' : '#fff', color: examType === e ? '#2D3CE6' : '#6B7280', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.15s' }}>
                         {e}
                       </button>
                     ))}

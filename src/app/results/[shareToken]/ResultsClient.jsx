@@ -15,7 +15,7 @@ function ScoreRing({ pct }) {
   const circ = 2 * Math.PI * r
   const ref  = useRef(null)
   const [count, setCount] = useState(0)
-  const color = pct >= 80 ? '#6DC77A' : pct >= 60 ? '#2D3CE6' : pct >= 40 ? '#D97706' : '#DC2626'
+  const color = pct >= 80 ? '#6DC77A' : pct >= 60 ? '#1D6FEF' : pct >= 40 ? '#D97706' : '#DC2626'
 
   useEffect(() => {
     const target = Math.round(pct); const step = target / (1200 / 16); let cur = 0
@@ -101,8 +101,8 @@ function AnswerReview({ questionReview, subject }) {
             <button key={tab.key} onClick={() => setFilter(tab.key)} style={{
               fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: filter === tab.key ? 700 : 500,
               padding: '8px 14px', border: 'none', background: 'transparent', cursor: 'pointer',
-              color: filter === tab.key ? '#2D3CE6' : '#6B7280',
-              borderBottom: `2px solid ${filter === tab.key ? '#2D3CE6' : 'transparent'}`,
+              color: filter === tab.key ? '#1D6FEF' : '#6B7280',
+              borderBottom: `2px solid ${filter === tab.key ? '#1D6FEF' : 'transparent'}`,
               marginBottom: -1, borderRadius: '6px 6px 0 0', transition: 'all 0.15s',
             }}>
               {tab.label}
@@ -133,7 +133,7 @@ function AnswerReview({ questionReview, subject }) {
                   {q.questionText.slice(0, 80)}{q.questionText.length > 80 ? '…' : ''}
                 </span>
                 {q.studentAnswer && (
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: '#EEF0FE', color: '#2D3CE6', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: '#EBF2FE', color: '#1D6FEF', flexShrink: 0 }}>
                     You: {q.studentAnswer}
                   </span>
                 )}
@@ -266,7 +266,7 @@ function CommunityPostModal({ session, readiness, onClose }) {
             <p style={{ fontSize: 24, marginBottom: 8 }}>🎉</p>
             <p style={{ fontWeight: 700, fontSize: 16, color: '#0A0A0A', marginBottom: 4 }}>Posted!</p>
             <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>Your result is now in the {session.exam_type} community feed.</p>
-            <a href={`/community/${roomId}`} style={{ display: 'inline-block', background: '#2D3CE6', color: '#fff', fontWeight: 700, fontSize: 14, padding: '10px 22px', borderRadius: 99, textDecoration: 'none' }}>
+            <a href={`/community/${roomId}`} style={{ display: 'inline-block', background: '#1D6FEF', color: '#fff', fontWeight: 700, fontSize: 14, padding: '10px 22px', borderRadius: 99, textDecoration: 'none' }}>
               View post →
             </a>
           </div>
@@ -301,7 +301,7 @@ function CommunityPostModal({ session, readiness, onClose }) {
                 Cancel
               </button>
               <button onClick={handlePost} disabled={posting}
-                style={{ flex: 2, padding: '12px 0', border: 'none', borderRadius: 10, background: '#2D3CE6', fontWeight: 700, fontSize: 14, color: '#fff', cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.7 : 1 }}>
+                style={{ flex: 2, padding: '12px 0', border: 'none', borderRadius: 10, background: '#1D6FEF', fontWeight: 700, fontSize: 14, color: '#fff', cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.7 : 1 }}>
                 {posting ? 'Posting…' : 'Post to community →'}
               </button>
             </div>
@@ -321,14 +321,14 @@ export default function ResultsClient({ session, shareToken }) {
   const url       = typeof window !== 'undefined' ? window.location.href : `${process.env.NEXT_PUBLIC_APP_URL || ''}/results/${shareToken}`
   const readiness = getReadiness(session.percentage)
   const sorted    = [...(session.topic_results || session.topicResults || [])].sort((a, b) => a.percentage - b.percentage)
-  const REC_COLORS = { 1: '#DC2626', 2: '#D97706', 3: '#2D3CE6' }
+  const REC_COLORS = { 1: '#DC2626', 2: '#D97706', 3: '#1D6FEF' }
 
   const pillStyle = {
     green: { bg: '#DCFCE7', color: '#15803D' },
-    blue:  { bg: '#EEF0FE', color: '#2D3CE6' },
+    blue:  { bg: '#EBF2FE', color: '#1D6FEF' },
     amber: { bg: '#FEF3C7', color: '#D97706' },
     red:   { bg: '#FEE2E2', color: '#DC2626' },
-  }[readiness.color] || { bg: '#EEF0FE', color: '#2D3CE6' }
+  }[readiness.color] || { bg: '#EBF2FE', color: '#1D6FEF' }
 
   useEffect(() => {
     saveSessionIDB({
@@ -359,12 +359,12 @@ export default function ResultsClient({ session, shareToken }) {
         {/* Top bar — logo + home button */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#2D3CE6"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#1D6FEF"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 15, color: '#0A0A0A' }}>Exam Ready Test</span>
           </div>
           <Link href="/"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#64748B', textDecoration: 'none', padding: '7px 14px', border: '1.5px solid #E2E8F0', borderRadius: 9, background: '#fff', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D3CE6'; e.currentTarget.style.color = '#2D3CE6' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#1D6FEF'; e.currentTarget.style.color = '#1D6FEF' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#64748B' }}>
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L3.5 6.5l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Home
@@ -392,9 +392,9 @@ export default function ResultsClient({ session, shareToken }) {
           {sorted.length > 5 && (
             <button
               onClick={() => setShowAllTopics(s => !s)}
-              style={{ marginTop: 12, width: '100%', padding: '10px 24px', border: 'none', borderRadius: 50, background: '#EEF0FD', color: '#2D3CE6', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'background 0.15s' }}
+              style={{ marginTop: 12, width: '100%', padding: '10px 24px', border: 'none', borderRadius: 50, background: '#EBF2FE', color: '#1D6FEF', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'background 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.background = '#E0E4FB'}
-              onMouseLeave={e => e.currentTarget.style.background = '#EEF0FD'}>
+              onMouseLeave={e => e.currentTarget.style.background = '#EBF2FE'}>
               {showAllTopics ? 'Show less ↑' : `Show ${sorted.length - 5} more topic${sorted.length - 5 !== 1 ? 's' : ''} ↓`}
             </button>
           )}
@@ -405,7 +405,7 @@ export default function ResultsClient({ session, shareToken }) {
           <div style={card}>
             <p style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 16, color: '#0A0A0A', marginBottom: 16 }}>Study recommendations</p>
             {session.recommendations.map((r, i) => (
-              <div key={r.topicId || i} style={{ borderLeft: `3px solid ${REC_COLORS[r.priority] || '#2D3CE6'}`, paddingLeft: 14, paddingTop: 10, paddingBottom: 10, background: '#FAFAFA', borderRadius: '0 8px 8px 0', marginBottom: 10 }}>
+              <div key={r.topicId || i} style={{ borderLeft: `3px solid ${REC_COLORS[r.priority] || '#1D6FEF'}`, paddingLeft: 14, paddingTop: 10, paddingBottom: 10, background: '#FAFAFA', borderRadius: '0 8px 8px 0', marginBottom: 10 }}>
                 <p style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 14, color: '#0A0A0A', marginBottom: 4 }}>{r.topicTitle || r.topicId}</p>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#6B7280', lineHeight: 1.6, margin: 0 }}>{r.message}</p>
               </div>
@@ -460,7 +460,7 @@ export default function ResultsClient({ session, shareToken }) {
           <ShareCard session={{ ...session, studentName: session.student_name, examType: session.exam_type, readinessLabel: readiness.label }} />
           <div style={{ marginTop: 14 }}>
             <button onClick={() => setShowPostModal(true)}
-              style={{ width: '100%', padding: '11px 0', border: '1.5px solid #2D3CE6', borderRadius: 10, background: '#fff', color: '#2D3CE6', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              style={{ width: '100%', padding: '11px 0', border: '1.5px solid #2D3CE6', borderRadius: 10, background: '#fff', color: '#1D6FEF', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               💬 Post to {session.exam_type} Community
             </button>
           </div>
@@ -469,7 +469,7 @@ export default function ResultsClient({ session, shareToken }) {
         {/* Actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 8 }}>
           <Link href={`/setup?subject=${encodeURIComponent(session.subject)}`}
-            style={{ textAlign: 'center', border: 'none', borderRadius: 10, padding: '13px 0', fontWeight: 700, fontSize: 14, color: '#fff', textDecoration: 'none', background: '#2D3CE6', display: 'block' }}>
+            style={{ textAlign: 'center', border: 'none', borderRadius: 10, padding: '13px 0', fontWeight: 700, fontSize: 14, color: '#fff', textDecoration: 'none', background: '#1D6FEF', display: 'block' }}>
             Retake {session.subject}
           </Link>
           <Link href="/setup"

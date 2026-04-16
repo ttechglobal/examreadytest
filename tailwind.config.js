@@ -13,6 +13,7 @@ module.exports = {
         pop:     { DEFAULT: '#FF6B35', light: '#FFF0EB' },
         forest:  { DEFAULT: '#16A34A', light: '#DCFCE7' },
         ink:     '#0F172A',
+        dark:    '#0F172A',   // alias — used in older student pages
         muted:   '#64748B',
         border:  '#E2E8F0',
         surface: '#F8FAFF',
@@ -21,7 +22,7 @@ module.exports = {
         danger:  '#DC2626',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Plus Jakarta Sans', 'sans-serif'],
+        display: ['var(--font-display)', 'DM Sans', 'sans-serif'],
         sans:    ['var(--font-nunito)', 'Nunito', 'sans-serif'],
         nunito:  ['var(--font-nunito)', 'Nunito', 'sans-serif'],
         inter:   ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],

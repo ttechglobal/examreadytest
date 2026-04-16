@@ -5,16 +5,16 @@ import { getSessions } from '@/lib/storage/sessions'
 import { formatTimeAgo } from '@/lib/utils/format'
 
 const ROOM_META = {
-  jamb: { color: '#2D3CE6', bg: '#EEF0FE', title: 'JAMB Community', sub: 'Students preparing for JAMB · Anonymous · Be kind' },
+  jamb: { color: '#1D6FEF', bg: '#EBF2FE', title: 'JAMB Community', sub: 'Students preparing for JAMB · Anonymous · Be kind' },
   waec: { color: '#15803D', bg: '#DCFCE7', title: 'WAEC Community', sub: 'Students preparing for WAEC · Anonymous · Be kind' },
   neco: { color: '#D97706', bg: '#FEF3C7', title: 'NECO Community', sub: 'Students preparing for NECO · Anonymous · Be kind' },
 }
 
 const TYPE_STYLES = {
   general:     { label: 'General',    bg: '#F1F5F9', text: '#64748B' },
-  question:    { label: 'Question',   bg: '#EEF0FE', text: '#2D3CE6' },
+  question:    { label: 'Question',   bg: '#EBF2FE', text: '#1D6FEF' },
   tip:         { label: 'Study tip',  bg: '#DCFCE7', text: '#15803D' },
-  score_share: { label: 'Score',      bg: '#EEF0FE', text: '#2D3CE6' },
+  score_share: { label: 'Score',      bg: '#EBF2FE', text: '#1D6FEF' },
 }
 
 // ─── Reply thread ─────────────────────────────────────────────
@@ -77,7 +77,7 @@ function ReplyThread({ postId }) {
           <input value={name} onChange={e => setName(e.target.value.slice(0, 40))} placeholder="Your name (optional)"
             style={{ flex: 1, fontFamily: 'Nunito, sans-serif', fontSize: 12, border: '1px solid #E2E8F0', borderRadius: 7, padding: '6px 10px', outline: 'none', color: '#0A0A0A' }}/>
           <button type="submit" disabled={!content.trim() || posting}
-            style={{ padding: '7px 16px', background: content.trim() ? '#2D3CE6' : '#E2E8F0', color: content.trim() ? '#fff' : '#94A3B8', border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: 12, cursor: content.trim() ? 'pointer' : 'not-allowed' }}>
+            style={{ padding: '7px 16px', background: content.trim() ? '#1D6FEF' : '#E2E8F0', color: content.trim() ? '#fff' : '#94A3B8', border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: 12, cursor: content.trim() ? 'pointer' : 'not-allowed' }}>
             {posting ? '…' : 'Reply'}
           </button>
         </div>
@@ -301,7 +301,7 @@ export default function RoomPage({ params }) {
   if (!ROOM_META[roomId]) {
     return (
       <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nunito, sans-serif', color: '#374151' }}>
-        Room not found. <Link href="/community" style={{ color: '#2D3CE6', marginLeft: 8 }}>← Back to community</Link>
+        Room not found. <Link href="/community" style={{ color: '#1D6FEF', marginLeft: 8 }}>← Back to community</Link>
       </main>
     )
   }
@@ -314,7 +314,7 @@ export default function RoomPage({ params }) {
           ← Community
         </Link>
         <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 16, color: '#0A0A0A' }}>{meta.title}</span>
-        <Link href="/setup" style={{ marginLeft: 'auto', background: '#2D3CE6', color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 600, fontSize: 13, padding: '7px 16px', borderRadius: 8, textDecoration: 'none' }}>
+        <Link href="/setup" style={{ marginLeft: 'auto', background: '#1D6FEF', color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 600, fontSize: 13, padding: '7px 16px', borderRadius: 8, textDecoration: 'none' }}>
           Start test
         </Link>
       </nav>

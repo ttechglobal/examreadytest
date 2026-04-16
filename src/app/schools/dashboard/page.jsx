@@ -135,7 +135,7 @@ function Sidebar({ tab, setTab, institution, onLogout, studentCount, cohortCount
         {/* Actions */}
         <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <Link href="/schools/cohorts/new"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', borderRadius: 9, background: '#1B4FD8', color: '#fff', fontWeight: 700, fontSize: 13, textDecoration: 'none', marginBottom: 6 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', borderRadius: 9, background: '#1D6FEF', color: '#fff', fontWeight: 700, fontSize: 13, textDecoration: 'none', marginBottom: 6 }}>
             <span style={{ fontSize: 14 }}>+</span> New cohort
           </Link>
           <button onClick={onLogout}
@@ -191,7 +191,7 @@ export default function SchoolDashboard() {
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8F9FA', fontFamily: 'Nunito, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#2D3CE6', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 14px' }}/>
+        <div style={{ width: 32, height: 32, border: '3px solid #E2E8F0', borderTopColor: '#1D6FEF', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 14px' }}/>
         <p style={{ fontSize: 14, color: '#64748B' }}>Loading dashboard…</p>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
@@ -226,7 +226,7 @@ export default function SchoolDashboard() {
             {TABS.find(t => t.id === tab)?.label}
           </p>
           <button onClick={() => data && setShowReport(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: '#2D3CE6', fontSize: 12, fontWeight: 700, fontFamily: 'Nunito, sans-serif' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: '#1D6FEF', fontSize: 12, fontWeight: 700, fontFamily: 'Nunito, sans-serif' }}>
             Report
           </button>
         </header>
@@ -242,8 +242,8 @@ export default function SchoolDashboard() {
             </p>
           </div>
           <button onClick={() => data && setShowReport(true)}
-            style={{ fontSize: 13, fontWeight: 700, background: '#1B4FD8', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
-            onMouseEnter={e=>e.currentTarget.style.background='#1e2cc0'} onMouseLeave={e=>e.currentTarget.style.background='#2D3CE6'}
+            style={{ fontSize: 13, fontWeight: 700, background: '#1D6FEF', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background='#1558CC'} onMouseLeave={e=>e.currentTarget.style.background='#1D6FEF'}
             className="dashboard-mobile-header-hide">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7.5M3.5 6l3 3 3-3M1 10.5v1a.5.5 0 00.5.5h10a.5.5 0 00.5-.5v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Generate Report
@@ -266,8 +266,8 @@ export default function SchoolDashboard() {
                 <EmptyState icon="📊" title="No test data yet"
                   body="Once students take tests via your cohort links, performance data appears here."
                   cta={cohorts.length === 0
-                    ? <Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#1B4FD8', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>
-                    : <button onClick={() => setTab('cohorts')} style={{ background: '#1B4FD8', color: '#fff', border: 'none', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>Share cohort links →</button>
+                    ? <Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#1D6FEF', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>
+                    : <button onClick={() => setTab('cohorts')} style={{ background: '#1D6FEF', color: '#fff', border: 'none', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>Share cohort links →</button>
                   }/>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: 16 }}>
@@ -478,10 +478,10 @@ export default function SchoolDashboard() {
           {tab === 'cohorts' && (
             <div>
               <SectionHeader title="Your cohorts" sub="Manage cohorts and share access links"
-                action={<Link href="/schools/cohorts/new" style={{ fontSize: 13, fontWeight: 700, background: '#1B4FD8', color: '#fff', padding: '8px 18px', borderRadius: 9, textDecoration: 'none' }}>+ New cohort</Link>}/>
+                action={<Link href="/schools/cohorts/new" style={{ fontSize: 13, fontWeight: 700, background: '#1D6FEF', color: '#fff', padding: '8px 18px', borderRadius: 9, textDecoration: 'none' }}>+ New cohort</Link>}/>
               {cohorts.length === 0 ? (
                 <EmptyState icon="👥" title="No cohorts yet" body="Create a cohort for each class. Students join via your unique link."
-                  cta={<Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#1B4FD8', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>}/>
+                  cta={<Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#1D6FEF', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>}/>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {cohorts.map(c => (
@@ -498,12 +498,12 @@ export default function SchoolDashboard() {
                           <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>{c.studentCount ?? 0} students · {c.sessionCount ?? 0} tests</p>
                         </div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                          <code style={{ fontSize: 13, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '5px 10px', borderRadius: 7 }}>{c.access_code}</code>
+                          <code style={{ fontSize: 13, fontWeight: 700, color: '#1D6FEF', background: '#EBF2FE', padding: '5px 10px', borderRadius: 7 }}>{c.access_code}</code>
                           <button onClick={() => handleCopy(`${window.location.origin}/join/${c.access_code}`, c.id)}
                             style={{ fontSize: 12, fontWeight: 700, padding: '6px 12px', border: `1.5px solid ${copied === c.id ? '#86EFAC' : '#E2E8F0'}`, borderRadius: 7, background: copied === c.id ? '#F0FDF4' : '#fff', color: copied === c.id ? '#15803D' : '#374151', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', transition: 'all 0.15s' }}>
                             {copied === c.id ? '✓ Copied' : 'Copy link'}
                           </button>
-                          <Link href={`/schools/cohorts/${c.id}`} style={{ fontSize: 12, fontWeight: 700, padding: '6px 12px', border: 'none', borderRadius: 7, background: '#1B4FD8', color: '#fff', textDecoration: 'none' }}>
+                          <Link href={`/schools/cohorts/${c.id}`} style={{ fontSize: 12, fontWeight: 700, padding: '6px 12px', border: 'none', borderRadius: 7, background: '#1D6FEF', color: '#fff', textDecoration: 'none' }}>
                             Analytics →
                           </Link>
                         </div>

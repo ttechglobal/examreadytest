@@ -4,15 +4,15 @@ import Link from 'next/link'
 import { formatTimeAgo } from '@/lib/utils/format'
 
 const ROOM_META = {
-  jamb: { color: '#2D3CE6', bg: '#EEF0FE', full: 'Joint Admissions & Matriculation Board' },
+  jamb: { color: '#1D6FEF', bg: '#EBF2FE', full: 'Joint Admissions & Matriculation Board' },
   waec: { color: '#15803D', bg: '#DCFCE7', full: 'West African Examinations Council'       },
   neco: { color: '#D97706', bg: '#FEF3C7', full: 'National Examinations Council'           },
 }
 
 const POST_TYPE_STYLE = {
-  question:    { label: 'Question',   bg: '#EEF0FE', text: '#2D3CE6' },
+  question:    { label: 'Question',   bg: '#EBF2FE', text: '#1D6FEF' },
   tip:         { label: 'Study tip',  bg: '#DCFCE7', text: '#15803D' },
-  score_share: { label: 'Score',      bg: '#EEF0FE', text: '#2D3CE6' },
+  score_share: { label: 'Score',      bg: '#EBF2FE', text: '#1D6FEF' },
   general:     { label: 'General',    bg: '#F1F5F9', text: '#64748B' },
 }
 
@@ -48,7 +48,7 @@ function PostCard({ post, showRoom = false }) {
           <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, color: '#0A0A0A', fontWeight: 600 }}>
             {post.score_data.subject} · {post.score_data.examType}
           </span>
-          <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900, color: '#2D3CE6' }}>
+          <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900, color: '#1D6FEF' }}>
             {Math.round(post.score_data.percentage)}%
           </span>
           <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 11, color: '#64748B' }}>
@@ -65,7 +65,7 @@ function PostCard({ post, showRoom = false }) {
           💬 {post.replyCount || 0} {post.replyCount === 1 ? 'reply' : 'replies'}
         </span>
         <Link href={`/community/${post.room_id}`}
-          style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, color: '#2D3CE6', textDecoration: 'none', marginLeft: 'auto', fontWeight: 600 }}>
+          style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, color: '#1D6FEF', textDecoration: 'none', marginLeft: 'auto', fontWeight: 600 }}>
           View thread →
         </Link>
       </div>
@@ -93,10 +93,10 @@ export default function CommunityPage() {
       {/* Nav */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #E8EAED', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 20 }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#2D3CE6"/><path d="M10 22V10l6 9 6-9v12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1D6FEF"/><path d="M10 22V10l6 9 6-9v12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 16, color: '#0A0A0A' }}>Learniie</span>
         </Link>
-        <Link href="/setup" style={{ background: '#2D3CE6', color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 600, fontSize: 14, padding: '8px 18px', borderRadius: 8, textDecoration: 'none' }}>
+        <Link href="/setup" style={{ background: '#1D6FEF', color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 600, fontSize: 14, padding: '8px 18px', borderRadius: 8, textDecoration: 'none' }}>
           Start test
         </Link>
       </nav>
@@ -104,7 +104,7 @@ export default function CommunityPage() {
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 20px' }}>
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
-          <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, fontWeight: 600, color: '#2D3CE6', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Community</p>
+          <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 12, fontWeight: 600, color: '#1D6FEF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Community</p>
           <h1 style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 36, color: '#0A0A0A', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 10 }}>
             Students helping students
           </h1>
