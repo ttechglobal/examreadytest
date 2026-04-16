@@ -221,7 +221,7 @@ export default function UploadPage() {
   const [saved,      setSaved]      = useState(null)
   const [lastBatch,  setLastBatch]  = useState(null)
   // Dynamic exam types — fetched from admin API, falls back to hardcoded
-  const [examTypes,  setExamTypes]  = useState(['JAMB','WAEC','NECO','BECE'])
+  const [examTypes,  setExamTypes]  = useState(['JAMB','WAEC','BECE'])
 
   useEffect(() => {
     fetch('/api/admin/exam-types')
