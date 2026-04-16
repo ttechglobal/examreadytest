@@ -52,7 +52,7 @@ export default function CohortPage({ params }) {
   }, [params.cohortId])
 
   function handleCopy() {
-    const url = cohort?.cohort?.access_url || `${window.location.origin}/join/${cohort?.cohort?.access_code}`
+    const url = `${window.location.origin}/join/${cohort?.cohort?.access_code}`
     navigator.clipboard.writeText(url)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
@@ -119,7 +119,7 @@ export default function CohortPage({ params }) {
               <code style={{ display: 'block', fontWeight: 900, fontSize: 22, color: '#2D3CE6', marginBottom: 12 }}>{c?.access_code}</code>
               <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>Share this link with your students. They click it, enter their name, and start testing immediately.</p>
               <div style={{ background: '#F8F9FA', border: '1px solid #E2E8F0', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: '#64748B', wordBreak: 'break-all', marginBottom: 12 }}>
-                {c?.access_url || `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${c?.access_code}`}
+                {`${window.location.origin}/join/${c?.access_code}`}
               </div>
               <button onClick={handleCopy}
                 style={{ width: '100%', padding: '10px 0', border: '1.5px solid #2D3CE6', borderRadius: 9, background: '#fff', color: '#2D3CE6', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>

@@ -84,9 +84,9 @@ export default function SchoolRegisterPage() {
 
         {/* Logo */}
         <Link href="/schools" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none', marginBottom: 32 }}>
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#2D3CE6"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="9" fill="#0B1120"/><path d="M18 9v18" stroke="#E6A817" strokeWidth="1.4" strokeLinecap="round"/><path d="M18 10C14 10 9 12 9 18s5 8 9 8" stroke="white" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity="0.7"/><path d="M18 10c4 0 9 2 9 8s-5 8-9 8" stroke="#E6A817" strokeWidth="1.6" strokeLinecap="round" fill="none"/></svg>
           <span style={{ fontWeight: 900, fontSize: 16, color: '#0A0A0A' }}>Exam Ready Test</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '2px 9px', borderRadius: 99 }}>Schools</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#1B4FD8', background: '#EEF0FE', padding: '2px 9px', borderRadius: 99 }}>Schools</span>
         </Link>
 
         {/* Card */}
@@ -95,7 +95,7 @@ export default function SchoolRegisterPage() {
           {/* Step indicator */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 28 }}>
             {[1, 2].map(n => (
-              <div key={n} style={{ flex: 1, height: 3, borderRadius: 99, background: n <= step ? '#2D3CE6' : '#E2E8F0', transition: 'background 0.3s' }} />
+              <div key={n} style={{ flex: 1, height: 3, borderRadius: 99, background: n <= step ? '#1B4FD8' : '#E2E8F0', transition: 'background 0.3s' }} />
             ))}
           </div>
 
@@ -115,7 +115,7 @@ export default function SchoolRegisterPage() {
                   onChange={e => set('name', e.target.value)}
                   placeholder="e.g. Kings High School"
                   style={inp}
-                  onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                  onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                   onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                 />
               </Field>
@@ -127,9 +127,9 @@ export default function SchoolRegisterPage() {
                       style={{
                         flex: 1, padding: '11px 0', borderRadius: 10, cursor: 'pointer',
                         fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: 14,
-                        border: `1.5px solid ${form.type === val ? '#2D3CE6' : '#E2E8F0'}`,
+                        border: `1.5px solid ${form.type === val ? '#1B4FD8' : '#E2E8F0'}`,
                         background: form.type === val ? '#EEF0FE' : '#fff',
-                        color: form.type === val ? '#2D3CE6' : '#64748B',
+                        color: form.type === val ? '#1B4FD8' : '#64748B',
                         transition: 'all 0.15s',
                       }}>
                       {label}
@@ -152,7 +152,7 @@ export default function SchoolRegisterPage() {
                 <Field label="City / State">
                   <input value={form.city} onChange={e => set('city', e.target.value)}
                     placeholder="e.g. Lagos" style={inp}
-                    onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                    onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                     onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                   />
                 </Field>
@@ -166,7 +166,7 @@ export default function SchoolRegisterPage() {
                 onClick={() => { if (validateStep1()) setStep(2) }}
                 style={{
                   width: '100%', padding: '14px 0', border: 'none', borderRadius: 10,
-                  background: form.name.trim() ? '#2D3CE6' : '#E2E8F0',
+                  background: form.name.trim() ? '#1B4FD8' : '#E2E8F0',
                   color: form.name.trim() ? '#fff' : '#94A3B8',
                   fontWeight: 800, fontSize: 15, cursor: form.name.trim() ? 'pointer' : 'not-allowed',
                   fontFamily: 'Nunito, sans-serif', transition: 'all 0.15s',
@@ -182,7 +182,7 @@ export default function SchoolRegisterPage() {
               <Field label="Contact person name *">
                 <input value={form.contactName} onChange={e => set('contactName', e.target.value)}
                   placeholder="e.g. Mrs. Adeyemi" style={inp}
-                  onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                  onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                   onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                 />
               </Field>
@@ -190,7 +190,7 @@ export default function SchoolRegisterPage() {
               <Field label="Email address *">
                 <input type="email" value={form.contactEmail} onChange={e => set('contactEmail', e.target.value)}
                   placeholder="admin@school.ng" style={inp}
-                  onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                  onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                   onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                 />
               </Field>
@@ -198,7 +198,7 @@ export default function SchoolRegisterPage() {
               <Field label="Phone number (optional)">
                 <input value={form.contactPhone} onChange={e => set('contactPhone', e.target.value)}
                   placeholder="+234 800 000 0000" style={inp}
-                  onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                  onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                   onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                 />
               </Field>
@@ -206,7 +206,7 @@ export default function SchoolRegisterPage() {
               <Field label="Password *">
                 <input type="password" value={form.password} onChange={e => set('password', e.target.value)}
                   placeholder="Minimum 8 characters" style={inp}
-                  onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                  onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                   onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                 />
               </Field>
@@ -215,7 +215,7 @@ export default function SchoolRegisterPage() {
                 <input type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)}
                   placeholder="Re-enter your password" style={inp}
                   onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                  onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+                  onFocus={e => e.target.style.borderColor = '#1B4FD8'}
                   onBlur={e => e.target.style.borderColor = '#E2E8F0'}
                 />
               </Field>
@@ -239,7 +239,7 @@ export default function SchoolRegisterPage() {
                 <button type="button" onClick={handleSubmit} disabled={loading}
                   style={{
                     flex: 2, padding: '14px 0', border: 'none', borderRadius: 10,
-                    background: loading ? '#93A3D8' : '#2D3CE6',
+                    background: loading ? '#93A3D8' : '#1B4FD8',
                     color: '#fff', fontWeight: 800, fontSize: 15,
                     cursor: loading ? 'not-allowed' : 'pointer',
                     fontFamily: 'Nunito, sans-serif', transition: 'all 0.15s',
@@ -252,7 +252,7 @@ export default function SchoolRegisterPage() {
 
           <p style={{ fontSize: 13, color: '#94A3B8', textAlign: 'center', marginTop: 22 }}>
             Already have an account?{' '}
-            <Link href="/schools/login" style={{ color: '#2D3CE6', fontWeight: 700, textDecoration: 'none' }}>
+            <Link href="/schools/login" style={{ color: '#1B4FD8', fontWeight: 700, textDecoration: 'none' }}>
               Log in
             </Link>
           </p>

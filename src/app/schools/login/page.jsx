@@ -62,9 +62,9 @@ export default function SchoolLoginPage() {
 
         {/* Logo */}
         <Link href="/schools" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none', marginBottom: 32 }}>
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#2D3CE6"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="9" fill="#0B1120"/><path d="M18 9v18" stroke="#E6A817" strokeWidth="1.4" strokeLinecap="round"/><path d="M18 10C14 10 9 12 9 18s5 8 9 8" stroke="white" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity="0.7"/><path d="M18 10c4 0 9 2 9 8s-5 8-9 8" stroke="#E6A817" strokeWidth="1.6" strokeLinecap="round" fill="none"/></svg>
           <span style={{ fontWeight: 900, fontSize: 16, color: '#0A0A0A' }}>Exam Ready Test</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '2px 9px', borderRadius: 99 }}>Schools</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#1B4FD8', background: '#EEF0FE', padding: '2px 9px', borderRadius: 99 }}>Schools</span>
         </Link>
 
         {/* Card */}
@@ -86,7 +86,7 @@ export default function SchoolLoginPage() {
               onChange={e => setEmail(e.target.value)}
               placeholder="admin@school.ng"
               style={inp}
-              onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+              onFocus={e => e.target.style.borderColor = '#1B4FD8'}
               onBlur={e => e.target.style.borderColor = '#E2E8F0'}
               autoComplete="email"
             />
@@ -101,7 +101,7 @@ export default function SchoolLoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="Your password"
               style={inp}
-              onFocus={e => e.target.style.borderColor = '#2D3CE6'}
+              onFocus={e => e.target.style.borderColor = '#1B4FD8'}
               onBlur={e => e.target.style.borderColor = '#E2E8F0'}
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               autoComplete="current-password"
@@ -122,7 +122,7 @@ export default function SchoolLoginPage() {
             disabled={loading || !email.trim() || !password}
             style={{
               width: '100%', padding: '14px 0', border: 'none', borderRadius: 10,
-              background: (!email.trim() || !password) ? '#E2E8F0' : loading ? '#93A3D8' : '#2D3CE6',
+              background: (!email.trim() || !password) ? '#E2E8F0' : loading ? '#93A3D8' : '#1B4FD8',
               color: (!email.trim() || !password) ? '#94A3B8' : '#fff',
               fontWeight: 800, fontSize: 15,
               cursor: (!email.trim() || !password || loading) ? 'not-allowed' : 'pointer',
@@ -133,7 +133,7 @@ export default function SchoolLoginPage() {
 
           <p style={{ fontSize: 13, color: '#94A3B8', textAlign: 'center', marginTop: 22 }}>
             Don't have an account?{' '}
-            <Link href="/schools/register" style={{ color: '#2D3CE6', fontWeight: 700, textDecoration: 'none' }}>
+            <Link href="/schools/register" style={{ color: '#1B4FD8', fontWeight: 700, textDecoration: 'none' }}>
               Register your school
             </Link>
           </p>

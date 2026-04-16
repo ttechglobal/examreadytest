@@ -133,6 +133,7 @@ function DetailDrawer({ questionId, onClose }) {
                 isCorrect={null}
                 correctAnswer={question.correct_answer}
                 studentAnswer={null}
+                subject={question.subject_id}
               />
 
               {/* Generate / regenerate explanation */}

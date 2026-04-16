@@ -4,9 +4,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui'
 
-const EXAMS = [
+// Fallback in case API is unavailable
+const EXAMS_FALLBACK = [
   { id: 'JAMB', label: 'JAMB', desc: 'University entry' },
   { id: 'WAEC', label: 'WAEC', desc: 'Senior Secondary' },
+  { id: 'BECE', label: 'BECE', desc: 'Junior Secondary' },
 ]
 
 const MODES = [
@@ -49,8 +51,25 @@ export default function SetupInner() {
   const [mounted,     setMounted]     = useState(false)
   const [subjects,    setSubjects]    = useState([])
   const [loadingSubj, setLoadingSubj] = useState(false)
+  const [exams,       setExams]       = useState(EXAMS_FALLBACK)
 
   useEffect(() => { setMounted(true) }, [])
+
+  // Fetch exam types from API
+  useEffect(() => {
+    fetch('/api/exam-types')
+      .then(r => r.json())
+      .then(d => {
+        if (d.examTypes?.length) {
+          setExams(d.examTypes.map(e => ({
+            id:    e.id,
+            label: e.name,
+            desc:  e.description || '',
+          })))
+        }
+      })
+      .catch(() => { /* keep fallback */ })
+  }, [])
 
   // Fetch subjects whenever examType changes
   useEffect(() => {
@@ -122,7 +141,7 @@ export default function SetupInner() {
           <div className="bg-white rounded-card border border-slate-100 shadow-card p-5">
             <p className="text-[13px] font-bold text-dark mb-3">Exam type</p>
             <div className="grid grid-cols-2 gap-2.5">
-              {EXAMS.map(e => (
+              {exams.map(e => (
                 <button key={e.id} type="button" onClick={() => setExamType(e.id)}
                   className={`relative border-[1.5px] rounded-xl p-3.5 text-left transition-all duration-150 active:scale-[.97]
                     ${examType === e.id

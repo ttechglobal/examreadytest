@@ -526,6 +526,7 @@ export default function TestPage() {
                               isCorrect={true}
                               correctAnswer={studyCorrectAns}
                               studentAnswer={studySelected}
+                              subject={setup?.subject}
                             />
                           </div>
                         )}

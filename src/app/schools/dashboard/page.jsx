@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import ReportModal from '@/components/schools/ReportModal'
 
 // ─── Helpers ──────────────────────────────────────────────────
 function pct(n) { return n != null ? `${Math.round(n)}%` : '—' }
@@ -71,19 +72,7 @@ function SectionHeader({ title, sub, action }) {
   )
 }
 
-function exportCSV(studentStats, subjectStats, institution) {
-  const lines = [
-    `Exam Ready Test — ${institution?.name || 'School'} Analytics`,
-    `Generated: ${new Date().toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}`,
-    '', 'STUDENT PERFORMANCE', 'Name,Sessions,Average Score,Improvement',
-    ...(studentStats || []).map(s => `"${s.name}",${s.sessionCount},${s.avgScore ?? ''},${s.improvement != null ? (s.improvement > 0 ? '+' : '') + s.improvement + '%' : ''}`),
-    '', 'SUBJECT PERFORMANCE', 'Subject,Sessions,Average Score,Status',
-    ...(subjectStats || []).map(s => `"${capitalize(s.subject)}",${s.sessionCount},${s.avgScore}%,${s.status}`),
-  ]
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
-  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `analytics-${new Date().toISOString().slice(0,10)}.csv` })
-  a.click()
-}
+// CSV export moved to ReportModal component
 
 // ─── Sidebar nav ────────────────────────────────────────────────
 const TABS = [
@@ -120,7 +109,7 @@ function Sidebar({ tab, setTab, institution, onLogout, studentCount, cohortCount
         {/* Brand */}
         <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-            <svg width="26" height="26" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="#2D3CE6"/><path d="M8 20V8l6 8 6-8v12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="26" height="26" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="9" fill="#0B1120"/><path d="M18 9v18" stroke="#E6A817" strokeWidth="1.4" strokeLinecap="round"/><path d="M18 10C14 10 9 12 9 18s5 8 9 8" stroke="white" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity="0.7"/><path d="M18 10c4 0 9 2 9 8s-5 8-9 8" stroke="#E6A817" strokeWidth="1.6" strokeLinecap="round" fill="none"/></svg>
             <div>
               <p style={{ fontWeight: 900, fontSize: 13, color: '#fff', margin: 0, lineHeight: 1.2 }}>Exam Ready Test</p>
               <p style={{ fontSize: 10, color: '#475569', margin: 0 }}>School Dashboard</p>
@@ -146,7 +135,7 @@ function Sidebar({ tab, setTab, institution, onLogout, studentCount, cohortCount
         {/* Actions */}
         <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <Link href="/schools/cohorts/new"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', borderRadius: 9, background: '#2D3CE6', color: '#fff', fontWeight: 700, fontSize: 13, textDecoration: 'none', marginBottom: 6 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', borderRadius: 9, background: '#1B4FD8', color: '#fff', fontWeight: 700, fontSize: 13, textDecoration: 'none', marginBottom: 6 }}>
             <span style={{ fontSize: 14 }}>+</span> New cohort
           </Link>
           <button onClick={onLogout}
@@ -178,7 +167,8 @@ export default function SchoolDashboard() {
   const [loading,    setLoading]    = useState(true)
   const [tab,        setTab]        = useState('overview')
   const [copied,     setCopied]     = useState(null)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileOpen,   setMobileOpen]   = useState(false)
+  const [showReport,   setShowReport]   = useState(false)
 
   useEffect(() => {
     fetch('/api/schools/dashboard')
@@ -235,9 +225,9 @@ export default function SchoolDashboard() {
           <p style={{ fontWeight: 800, fontSize: 14, color: '#0A0A0A', margin: 0 }}>
             {TABS.find(t => t.id === tab)?.label}
           </p>
-          <button onClick={() => data && exportCSV(studentStats, subjectStats, institution)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: '#64748B', fontSize: 12, fontWeight: 700, fontFamily: 'Nunito, sans-serif' }}>
-            ↓ Export
+          <button onClick={() => data && setShowReport(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, color: '#2D3CE6', fontSize: 12, fontWeight: 700, fontFamily: 'Nunito, sans-serif' }}>
+            Report
           </button>
         </header>
 
@@ -251,10 +241,12 @@ export default function SchoolDashboard() {
               {stats?.totalStudents ?? 0} students · {stats?.totalSessions ?? 0} tests · {stats?.avgScore != null ? `${stats.avgScore}% avg` : 'No data yet'}
             </p>
           </div>
-          <button onClick={() => data && exportCSV(studentStats, subjectStats, institution)}
-            style={{ fontSize: 13, fontWeight: 700, background: '#F1F5F9', color: '#374151', border: '1px solid #E2E8F0', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+          <button onClick={() => data && setShowReport(true)}
+            style={{ fontSize: 13, fontWeight: 700, background: '#1B4FD8', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
+            onMouseEnter={e=>e.currentTarget.style.background='#1e2cc0'} onMouseLeave={e=>e.currentTarget.style.background='#2D3CE6'}
             className="dashboard-mobile-header-hide">
-            ↓ Export CSV
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7.5M3.5 6l3 3 3-3M1 10.5v1a.5.5 0 00.5.5h10a.5.5 0 00.5-.5v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Generate Report
           </button>
         </div>
 
@@ -274,8 +266,8 @@ export default function SchoolDashboard() {
                 <EmptyState icon="📊" title="No test data yet"
                   body="Once students take tests via your cohort links, performance data appears here."
                   cta={cohorts.length === 0
-                    ? <Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#2D3CE6', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>
-                    : <button onClick={() => setTab('cohorts')} style={{ background: '#2D3CE6', color: '#fff', border: 'none', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>Share cohort links →</button>
+                    ? <Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#1B4FD8', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>
+                    : <button onClick={() => setTab('cohorts')} style={{ background: '#1B4FD8', color: '#fff', border: 'none', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>Share cohort links →</button>
                   }/>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))', gap: 16 }}>
@@ -486,10 +478,10 @@ export default function SchoolDashboard() {
           {tab === 'cohorts' && (
             <div>
               <SectionHeader title="Your cohorts" sub="Manage cohorts and share access links"
-                action={<Link href="/schools/cohorts/new" style={{ fontSize: 13, fontWeight: 700, background: '#2D3CE6', color: '#fff', padding: '8px 18px', borderRadius: 9, textDecoration: 'none' }}>+ New cohort</Link>}/>
+                action={<Link href="/schools/cohorts/new" style={{ fontSize: 13, fontWeight: 700, background: '#1B4FD8', color: '#fff', padding: '8px 18px', borderRadius: 9, textDecoration: 'none' }}>+ New cohort</Link>}/>
               {cohorts.length === 0 ? (
                 <EmptyState icon="👥" title="No cohorts yet" body="Create a cohort for each class. Students join via your unique link."
-                  cta={<Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#2D3CE6', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>}/>
+                  cta={<Link href="/schools/cohorts/new" style={{ display: 'inline-block', background: '#1B4FD8', color: '#fff', padding: '11px 24px', borderRadius: 9, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create first cohort →</Link>}/>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {cohorts.map(c => (
@@ -507,11 +499,11 @@ export default function SchoolDashboard() {
                         </div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                           <code style={{ fontSize: 13, fontWeight: 700, color: '#2D3CE6', background: '#EEF0FE', padding: '5px 10px', borderRadius: 7 }}>{c.access_code}</code>
-                          <button onClick={() => handleCopy(c.access_url || `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${c.access_code}`, c.id)}
+                          <button onClick={() => handleCopy(`${window.location.origin}/join/${c.access_code}`, c.id)}
                             style={{ fontSize: 12, fontWeight: 700, padding: '6px 12px', border: `1.5px solid ${copied === c.id ? '#86EFAC' : '#E2E8F0'}`, borderRadius: 7, background: copied === c.id ? '#F0FDF4' : '#fff', color: copied === c.id ? '#15803D' : '#374151', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', transition: 'all 0.15s' }}>
                             {copied === c.id ? '✓ Copied' : 'Copy link'}
                           </button>
-                          <Link href={`/schools/cohorts/${c.id}`} style={{ fontSize: 12, fontWeight: 700, padding: '6px 12px', border: 'none', borderRadius: 7, background: '#2D3CE6', color: '#fff', textDecoration: 'none' }}>
+                          <Link href={`/schools/cohorts/${c.id}`} style={{ fontSize: 12, fontWeight: 700, padding: '6px 12px', border: 'none', borderRadius: 7, background: '#1B4FD8', color: '#fff', textDecoration: 'none' }}>
                             Analytics →
                           </Link>
                         </div>
@@ -524,6 +516,11 @@ export default function SchoolDashboard() {
           )}
         </main>
       </div>
+
+      {/* Report modal */}
+      {showReport && (
+        <ReportModal data={data} onClose={() => setShowReport(false)}/>
+      )}
 
       <style>{`
         @media (max-width: 767px) {

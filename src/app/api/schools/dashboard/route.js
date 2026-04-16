@@ -153,14 +153,45 @@ export async function GET() {
     sessionCount: sessions.filter(s => s.cohort_id === c.id).length,
   }))
 
+  // ── Monthly trends ─────────────────────────────────────────
+  // Group sessions by YYYY-MM and compute avg score per month
+  const monthlyMap = {}
+  sessions.forEach(s => {
+    const m = s.created_at?.slice(0, 7) // "2024-03"
+    if (!m) return
+    if (!monthlyMap[m]) monthlyMap[m] = { month: m, scores: [], count: 0 }
+    monthlyMap[m].scores.push(s.percentage)
+    monthlyMap[m].count++
+  })
+  const monthlyTrends = Object.values(monthlyMap)
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map(m => ({
+      month:    m.month,
+      avgScore: Math.round(m.scores.reduce((a, b) => a + b, 0) / m.scores.length),
+      count:    m.count,
+    }))
+
+  // ── Per-student session history (for individual reports) ────
+  const studentSessionHistory = {}
+  Object.values(studentMap).forEach(s => {
+    const sorted = [...s.sessions].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    studentSessionHistory[s.id] = sorted.map(sess => ({
+      subject:    sess.subject,
+      percentage: sess.percentage,
+      date:       sess.created_at?.slice(0, 10),
+    }))
+  })
+
   return NextResponse.json({
-    institution:       { id: inst.institutionId, name: inst.name, type: inst.type },
-    stats:             { totalStudents, totalSessions, avgScore, activeCohorts: (cohorts || []).filter(c => c.is_active).length },
-    cohorts:           enrichedCohorts,
+    institution:           { id: inst.institutionId, name: inst.name, type: inst.type },
+    stats:                 { totalStudents, totalSessions, avgScore, activeCohorts: (cohorts || []).filter(c => c.is_active).length },
+    cohorts:               enrichedCohorts,
     studentStats,
     subjectStats,
     topPerformers,
     consistentImprovers,
     areasToImprove,
+    monthlyTrends,
+    studentSessionHistory,
   })
 }

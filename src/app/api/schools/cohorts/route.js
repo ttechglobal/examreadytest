@@ -55,7 +55,9 @@ export async function POST(request) {
 
   const supabase   = getSupabase()
   const accessCode = generateAccessCode(inst.name, academicYear)
-  const appUrl     = process.env.NEXT_PUBLIC_APP_URL || 'https://examreadytest.com'
+
+  // access_url is NOT stored — computed dynamically at display time from access_code
+  // This avoids baking localhost or any env-specific URL into the database
 
   const { data, error } = await supabase
     .from('cohorts')
@@ -66,7 +68,7 @@ export async function POST(request) {
       exam_type:      examType.toUpperCase(),
       subjects,
       access_code:    accessCode,
-      access_url:     `${appUrl}/join/${accessCode}`,
+      access_url:     null,  // always computed from access_code at display time
     })
     .select()
     .single()

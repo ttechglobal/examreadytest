@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { MathText } from '@/components/ui/MathText'
 import { ExplanationCard } from '@/components/exam/ExplanationCard'
@@ -12,7 +12,9 @@ const FILTERS = [
   { id: 'unanswered', label: 'Unanswered' },
 ]
 
+// ─── Option button (display-only in review mode) ──────────────
 function ReviewOption({ letter, text, state }) {
+  // state: 'correct' | 'wrong' | 'correct-answer' | 'neutral'
   const styles = {
     correct: {
       bg: '#F0FDF4', border: '#86EFAC', textColor: '#15803D',
@@ -30,7 +32,7 @@ function ReviewOption({ letter, text, state }) {
       bg: '#F8FAFC', border: '#E2E8F0', textColor: '#374151',
       badge: { bg: '#E2E8F0', color: '#64748B' }, label: null,
     },
-  }[state] || { bg: '#F8FAFC', border: '#E2E8F0', textColor: '#374151', badge: { bg: '#E2E8F0', color: '#64748B' }, label: null }
+  }[state] || styles.neutral
 
   return (
     <div style={{
@@ -61,6 +63,7 @@ function ReviewOption({ letter, text, state }) {
   )
 }
 
+// ─── Question Navigator Grid ──────────────────────────────────
 function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange }) {
   const counts = {
     all:        review.length,
@@ -75,6 +78,7 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
         Question Navigator
       </p>
 
+      {/* Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 5, marginBottom: 16 }}>
         {review.map((q, i) => {
           const isCurrent = i === currentIdx
@@ -84,9 +88,9 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
             (activeFilter === 'unanswered' && q.studentAnswer)
           )
           let bg = '#F1F5F9', color = '#64748B', border = '#E2E8F0'
-          if (q.isCorrect)                           { bg = '#DCFCE7'; color = '#15803D'; border = '#86EFAC' }
-          else if (!q.isCorrect && q.studentAnswer)  { bg = '#FEE2E2'; color = '#B91C1C'; border = '#FCA5A5' }
-          else if (!q.studentAnswer)                 { bg = '#FEF3C7'; color = '#92400E'; border = '#FCD34D' }
+          if (q.isCorrect)                      { bg = '#DCFCE7'; color = '#15803D'; border = '#86EFAC' }
+          else if (!q.isCorrect && q.studentAnswer) { bg = '#FEE2E2'; color = '#B91C1C'; border = '#FCA5A5' }
+          else if (!q.studentAnswer)             { bg = '#FEF3C7'; color = '#92400E'; border = '#FCD34D' }
 
           return (
             <button key={i} onClick={() => onJump(i)}
@@ -107,11 +111,12 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
         })}
       </div>
 
+      {/* Summary */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 14 }}>
         {[
-          { label: 'Correct',    count: counts.correct,    bg: '#DCFCE7', color: '#15803D' },
-          { label: 'Wrong',      count: counts.wrong,      bg: '#FEE2E2', color: '#B91C1C' },
-          { label: 'Unanswered', count: counts.unanswered, bg: '#FEF3C7', color: '#92400E' },
+          { label: 'Correct',     count: counts.correct,    bg: '#DCFCE7', color: '#15803D' },
+          { label: 'Wrong',       count: counts.wrong,      bg: '#FEE2E2', color: '#B91C1C' },
+          { label: 'Unanswered',  count: counts.unanswered, bg: '#FEF3C7', color: '#92400E' },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', borderRadius: 8, background: s.bg }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: s.color }}>{s.label}</span>
@@ -120,6 +125,7 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
         ))}
       </div>
 
+      {/* Filter tabs */}
       <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
         Filter
       </p>
@@ -138,50 +144,51 @@ function Navigator({ review, currentIdx, activeFilter, onJump, onFilterChange })
   )
 }
 
+// ─── Main review client ────────────────────────────────────────
 export default function ReviewClient({ session, shareToken }) {
-  const searchParams   = useSearchParams()
-  const review         = session.question_review || session.questionReview || []
-  const initialFilter  = searchParams.get('filter') || 'all'
+  const router = useRouter()
+  const review = session.question_review || session.questionReview || []
 
-  const [currentIdx,   setCurrentIdx]  = useState(0)
-  const [showExplain,  setShowExplain] = useState(false)
-  const [activeFilter, setActiveFilter] = useState(initialFilter)
+  const [currentIdx,   setCurrentIdx]   = useState(0)
+  const [showExplain,  setShowExplain]  = useState(false)
+  const [activeFilter, setActiveFilter] = useState('all')
+
+  const current = review[currentIdx]
+  const isLast  = currentIdx === review.length - 1
+  const isFirst = currentIdx === 0
 
   // Auto-jump to first unanswered when arriving via ?filter=unanswered
   useEffect(() => {
-    if (initialFilter === 'unanswered') {
-      const first = review.findIndex(q => !q.studentAnswer)
-      if (first !== -1) setCurrentIdx(first)
+    if (activeFilter === 'unanswered') {
+      const firstUnanswered = review.findIndex(q => !q.studentAnswer)
+      if (firstUnanswered !== -1) setCurrentIdx(firstUnanswered)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard navigation
   useEffect(() => {
     function onKey(e) {
-      if (e.key === 'ArrowRight') { setCurrentIdx(i => Math.min(i + 1, review.length - 1)); setShowExplain(false) }
-      if (e.key === 'ArrowLeft')  { setCurrentIdx(i => Math.max(i - 1, 0)); setShowExplain(false) }
+      if (e.key === 'ArrowRight' && !isLast)  { setCurrentIdx(i => i + 1); setShowExplain(false) }
+      if (e.key === 'ArrowLeft'  && !isFirst) { setCurrentIdx(i => i - 1); setShowExplain(false) }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [review.length])
+  }, [isLast, isFirst])
 
-  function goTo(i)  { setCurrentIdx(i); setShowExplain(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  function next()   { goTo(Math.min(currentIdx + 1, review.length - 1)) }
-  function prev()   { goTo(Math.max(currentIdx - 1, 0)) }
+  function goTo(i) { setCurrentIdx(i); setShowExplain(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  function next()  { if (!isLast)  goTo(currentIdx + 1) }
+  function prev()  { if (!isFirst) goTo(currentIdx - 1) }
 
   function getOptionState(letter) {
     if (!current) return 'neutral'
     const isCorrect = letter === current.correctAnswer
     const isStudent = letter === current.studentAnswer
-    if (isCorrect && isStudent)  return 'correct'
-    if (isCorrect && !isStudent) return 'correct-answer'
-    if (!isCorrect && isStudent) return 'wrong'
+    if (isCorrect && isStudent) return 'correct'           // got it right
+    if (isCorrect && !isStudent) return 'correct-answer'   // correct but not picked
+    if (!isCorrect && isStudent) return 'wrong'            // student's wrong pick
     return 'neutral'
   }
 
-  const current         = review[currentIdx]
-  const isLast          = currentIdx === review.length - 1
-  const isFirst         = currentIdx === 0
   const correctCount    = review.filter(q => q.isCorrect).length
   const wrongCount      = review.filter(q => !q.isCorrect && q.studentAnswer).length
   const unansweredCount = review.filter(q => !q.studentAnswer).length
@@ -198,7 +205,7 @@ export default function ReviewClient({ session, shareToken }) {
   return (
     <div className="student-page" style={{ minHeight: '100vh', background: '#F8FAFC' }}>
 
-      {/* Sticky header */}
+      {/* ── Sticky header ── */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 20,
         background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)',
@@ -213,38 +220,48 @@ export default function ReviewClient({ session, shareToken }) {
         </Link>
 
         <div style={{ flex: 1, textAlign: 'center' }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>Review Mode</span>
-          <span style={{ fontSize: 12, color: '#94A3B8', marginLeft: 8 }}>Q {currentIdx + 1} / {review.length}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+            Review Mode
+          </span>
+          <span style={{ fontSize: 12, color: '#94A3B8', marginLeft: 8 }}>
+            Q {currentIdx + 1} / {review.length}
+          </span>
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#DCFCE7', color: '#15803D' }}>✓ {correctCount}</span>
-          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#FEE2E2', color: '#B91C1C' }}>✗ {wrongCount}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#DCFCE7', color: '#15803D' }}>
+            ✓ {correctCount}
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#FEE2E2', color: '#B91C1C' }}>
+            ✗ {wrongCount}
+          </span>
           {unansweredCount > 0 && (
-            <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#FEF3C7', color: '#92400E' }}>— {unansweredCount}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: '#FEF3C7', color: '#92400E' }}>
+              — {unansweredCount}
+            </span>
           )}
         </div>
       </header>
 
-      {/* Main layout */}
+      {/* ── Main layout ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 280px', gap: 20 }}
         className="review-layout">
         <style>{`@media(max-width:768px){.review-layout{grid-template-columns:1fr!important}}`}</style>
 
-        {/* Left: Question */}
+        {/* ── Left: Question ── */}
         <div>
-          {/* Topic + badges */}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+          {/* Topic + number */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
             {current.topicTitle && (
               <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 99, background: '#EEF0FE', color: '#2D3CE6' }}>
                 {current.topicTitle}
               </span>
             )}
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>Question {currentIdx + 1}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>
+              Question {currentIdx + 1}
+            </span>
             {current.difficulty && (
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99,
-                background: { easy: '#F0FDF4', medium: '#FEF3C7', hard: '#FFF1F2' }[current.difficulty] || '#F8FAFC',
-                color:      { easy: '#15803D', medium: '#D97706', hard: '#B91C1C' }[current.difficulty] || '#64748B' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: { easy: '#F0FDF4', medium: '#FEF3C7', hard: '#FFF1F2' }[current.difficulty] || '#F8FAFC', color: { easy: '#15803D', medium: '#D97706', hard: '#B91C1C' }[current.difficulty] || '#64748B' }}>
                 {current.difficulty}
               </span>
             )}
@@ -252,18 +269,14 @@ export default function ReviewClient({ session, shareToken }) {
 
           {/* Unanswered banner */}
           {!current.studentAnswer && (
-            <div style={{ marginBottom: 16, padding: '12px 16px', background: '#FEF3C7', border: '1.5px solid #FCD34D', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 16 }}>📌</span>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#92400E', margin: 0 }}>You didn't answer this question</p>
-                <p style={{ fontSize: 12, color: '#B45309', margin: '2px 0 0' }}>The correct answer is highlighted in green below.</p>
-              </div>
+            <div style={{ marginBottom: 16, padding: '10px 14px', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#92400E' }}>
+              You didn't answer this question
             </div>
           )}
 
           {/* Question text */}
           <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #E8EAED', padding: '22px 24px', marginBottom: 16 }}>
-            <MathText as="p" style={{ fontSize: 18, fontWeight: 500, lineHeight: 1.85, color: '#0A0A0A', margin: 0 }}>
+            <MathText as="p" className="question-text" style={{ fontSize: 18, fontWeight: 500, lineHeight: 1.85, color: '#0A0A0A', margin: 0 }}>
               {current.questionText}
             </MathText>
           </div>
@@ -280,7 +293,7 @@ export default function ReviewClient({ session, shareToken }) {
             ))}
           </div>
 
-          {/* Explanation toggle */}
+          {/* See explanation toggle */}
           <div style={{ marginBottom: 24 }}>
             <button
               onClick={() => setShowExplain(v => !v)}
@@ -292,7 +305,8 @@ export default function ReviewClient({ session, shareToken }) {
                 color: showExplain ? '#fff' : '#2D3CE6',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
                 transition: 'all 0.15s', marginBottom: 14,
-              }}>
+              }}
+            >
               💡 {showExplain ? 'Hide explanation' : 'See explanation'}
             </button>
 
@@ -303,6 +317,7 @@ export default function ReviewClient({ session, shareToken }) {
                   isCorrect={current.isCorrect}
                   correctAnswer={current.correctAnswer}
                   studentAnswer={current.studentAnswer}
+                  subject={session?.subject}
                 />
               )}
             </div>
@@ -311,7 +326,7 @@ export default function ReviewClient({ session, shareToken }) {
           {/* Navigation */}
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <button onClick={prev} disabled={isFirst}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: '1.5px solid #E2E8F0', borderRadius: 10, background: '#fff', fontSize: 14, fontWeight: 700, color: isFirst ? '#C4C4C4' : '#374151', cursor: isFirst ? 'not-allowed' : 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: '1.5px solid #E2E8F0', borderRadius: 10, background: '#fff', fontSize: 14, fontWeight: 700, color: isFirst ? '#C4C4C4' : '#374151', cursor: isFirst ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Previous
             </button>
@@ -328,7 +343,7 @@ export default function ReviewClient({ session, shareToken }) {
               </Link>
             ) : (
               <button onClick={next}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: 'none', borderRadius: 10, background: '#2D3CE6', fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '11px 20px', border: 'none', borderRadius: 10, background: '#2D3CE6', fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer', transition: 'all 0.15s' }}>
                 Next
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
@@ -336,7 +351,7 @@ export default function ReviewClient({ session, shareToken }) {
           </div>
         </div>
 
-        {/* Right: Navigator */}
+        {/* ── Right: Navigator ── */}
         <div>
           <Navigator
             review={review}
@@ -349,4 +364,4 @@ export default function ReviewClient({ session, shareToken }) {
       </div>
     </div>
   )
-}[]
+}

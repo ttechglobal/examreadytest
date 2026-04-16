@@ -123,6 +123,7 @@ function QuestionCard({ item, globalIndex }) {
                   isCorrect={item.isCorrect}
                   correctAnswer={item.correctAnswer}
                   studentAnswer={item.studentAnswer}
+                  subject={subject}
                 />
               )}
             </div>
@@ -133,7 +134,7 @@ function QuestionCard({ item, globalIndex }) {
   )
 }
 
-export function AnswerReview({ questionReview }) {
+export function AnswerReview({ questionReview, subject }) {
   const [activeTab, setActiveTab] = useState('all')
   const [visible,   setVisible]   = useState(false)
 

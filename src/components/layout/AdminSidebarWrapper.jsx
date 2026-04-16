@@ -7,6 +7,7 @@ const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".5"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".5"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".5"/></svg> },
   { href: '/admin/questions', label: 'Questions', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
   { href: '/admin/upload',    label: 'Upload',    icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 9.5V2.5M4.5 5.5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12h11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
+  { href: '/admin/exams',     label: 'Exams',     icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M4.5 6h6M4.5 9h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
   { href: '/admin/sessions',  label: 'Sessions',  icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 12V8.5M5.5 12V5M9 12V7M12.5 12V2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
   { href: '/admin/community', label: 'Community', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="5" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><circle cx="10.5" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1 13c0-2.2 1.8-4 4-4s4 1.8 4 4M8 10.5c.6-.3 1.2-.5 2-.5 2.2 0 4 1.8 4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg> },
 ]
@@ -34,7 +35,7 @@ function Sidebar({ onClose }) {
 
       <nav className="flex-1 px-2 pt-3 pb-2">
         <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.08em] px-2 pb-1.5">Main</p>
-        {NAV.slice(0, 3).map(item => (
+        {NAV.slice(0, 4).map(item => (
           <Link
             key={item.href} href={item.href} onClick={onClose}
             className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-[8px] text-[13px] font-semibold w-full transition-colors mb-0.5
@@ -46,7 +47,7 @@ function Sidebar({ onClose }) {
         ))}
 
         <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.08em] px-2 pb-1.5 mt-4">Analytics</p>
-        {NAV.slice(3, 4).map(item => (
+        {NAV.slice(4, 5).map(item => (
           <Link
             key={item.href} href={item.href} onClick={onClose}
             className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-[8px] text-[13px] font-semibold w-full transition-colors mb-0.5
@@ -58,7 +59,7 @@ function Sidebar({ onClose }) {
         ))}
 
         <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.08em] px-2 pb-1.5 mt-4">Community</p>
-        {NAV.slice(4).map(item => (
+        {NAV.slice(5).map(item => (
           <Link
             key={item.href} href={item.href} onClick={onClose}
             className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-[8px] text-[13px] font-semibold w-full transition-colors mb-0.5

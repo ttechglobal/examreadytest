@@ -69,7 +69,7 @@ function TopicRow({ topic }) {
 }
 
 // ─── Answer review panel ──────────────────────────────────────
-function AnswerReview({ questionReview }) {
+function AnswerReview({ questionReview, subject }) {
   const [filter,   setFilter]   = useState('all')
   const [expanded, setExpanded] = useState(null)
 
@@ -180,6 +180,7 @@ function AnswerReview({ questionReview }) {
                     isCorrect={q.isCorrect}
                     correctAnswer={q.correctAnswer}
                     studentAnswer={q.studentAnswer}
+                    subject={subject}
                   />
                 </div>
               )}

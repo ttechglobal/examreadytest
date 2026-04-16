@@ -2,37 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Global font enforcement ──────────────────────────────────── */
-
+/* ── Design tokens ──────────────────────────────────────────── */
 @layer base {
   :root {
-    --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ease-out:      cubic-bezier(0.0,  0.0,  0.2,  1);
-    --ease-in-out:   cubic-bezier(0.4,  0.0,  0.2,  1);
-    --duration-fast: 150ms;
-    --duration-base: 250ms;
-    --duration-slow: 400ms;
+    /* ── Brand: deep navy-blue (trust, authority) ──── */
+    --brand:      #1A2B5E;
+    --brand-mid:  #243575;
+    --brand-lt:   #EEF1FB;
+    --brand-mut:  #7B8DBF;
+
+    /* ── CTA: vivid blue (Duolingo-energy, action) ── */
+    --cta:        #1D6FEF;
+    --cta-dk:     #1558CC;
+    --cta-lt:     #EBF2FE;
+
+    /* ── Accent: vivid green (growth, achievement) ── */
+    --amber:      #19A96B;   /* renamed semantically but kept as --amber for compat */
+    --amber-dk:   #0E8653;
+    --amber-lt:   #E8FAF2;
+
+    /* ── Pop: warm coral-orange (energy, reward) ──── */
+    --pop:        #FF6B35;
+    --pop-lt:     #FFF0EB;
+
+    /* ── Forest green (correct answers, success) ──── */
+    --forest:     #16A34A;
+    --forest-lt:  #DCFCE7;
+
+    /* ── Neutrals ──────────────────────── */
+    --ink:        #111827;
+    --ink-2:      #1F2937;
+    --ink-3:      #374151;
+    --muted:      #6B7280;
+    --faint:      #9CA3AF;
+    --border:     #E5E7EB;
+    --surface:    #F8FAFF;
+    --card:       #FFFFFF;
+
+    /* ── Status ─────────────────────────── */
+    --green:      #19A96B;
+    --green-lt:   #E8FAF2;
+    --red:        #DC2626;
+    --red-lt:     #FEE2E2;
+    --blue:       #1D6FEF;
+    --blue-dk:    #1558CC;
+    --blue-lt:    #EBF2FE;
+    /* Keep accent vars for explanation card backwards compat */
+    --accent:     #F59E3F;
+    --accent-dk:  #D97706;
+    --accent-lt:  #FFF7ED;
+
+    /* ── Easing ─────────────────────────── */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out:    cubic-bezier(0.0,  0.0,  0.2,  1);
+    --ease-smooth: cubic-bezier(0.4,  0.0,  0.2,  1);
   }
 
   html {
-    font-family: var(--font-nunito), 'Nunito', sans-serif !important;
+    font-family: var(--font-nunito), 'Nunito', sans-serif;
     scroll-behavior: smooth;
   }
 
   body {
     font-family: var(--font-nunito), 'Nunito', sans-serif;
-    background-color: #F8F9FA;
-    color: #1A1A1A;
+    background: var(--surface);
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-
   input, button, textarea, select, option { font-family: inherit; }
 
   :focus-visible {
-    outline: 2px solid #2D3CE6;
+    outline: 2px solid var(--cta);
     outline-offset: 2px;
     border-radius: 6px;
   }
@@ -42,310 +85,320 @@
   input[type='number'] { -moz-appearance: textfield; }
 }
 
-/* ── Student & community pages ──────────────────────────────── */
+/* ── Display font util ───────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display), 'DM Sans', sans-serif;
+}
+
+
+/* ── Smooth reveal animation ─────────────────────────────────── */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes reveal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes float-a {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-9px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%       { transform: translateY(-7px) rotate(1deg); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-11px); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 168, 23, 0); }
+  50%       { box-shadow: 0 0 0 8px rgba(230, 168, 23, 0.1); }
+}
+
+/* ── Utility classes ─────────────────────────────────────────── */
+.animate-spin   { animation: spin 0.7s linear infinite; }
+.animate-shake  { animation: shake 0.35s ease; }
+.animate-fadeup { animation: fade-up 0.25s ease both; }
+
+/* ── Student & community pages ───────────────────────────────── */
 .student-page, .student-page *,
 .community-page, .community-page * {
   font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
 
-/* ── Admin override — Inter ─────────────────────────────────── */
+/* ── Admin scope — Inter ─────────────────────────────────────── */
 [data-admin="true"],
 [data-admin="true"] * {
   font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── KaTeX — always preserve its fonts ─────────────────────── */
+/* ── KaTeX — always preserve its fonts ──────────────────────── */
 .katex, .katex *, .katex-html, .katex-html * {
   font-family: KaTeX_Main, KaTeX_Math, KaTeX_AMS, serif !important;
 }
 
-@layer components {
-  .animate-stagger-1 { animation-delay: 0ms; }
-  .animate-stagger-2 { animation-delay: 80ms; }
-  .animate-stagger-3 { animation-delay: 160ms; }
-  .animate-stagger-4 { animation-delay: 240ms; }
-  .animate-stagger-5 { animation-delay: 320ms; }
+/* ── Explanation card (exam review) ─────────────────────────── */
+/* ── Explanation card ────────────────────────────────────────── */
 
-  .skeleton {
-    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 8px;
-  }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+/*
+  Two layouts:
+    Calculation subjects (Math, Physics, Chemistry):
+      Concept → Background → Formula → Steps → Why correct → Wrong options → Takeaway
+    Theory subjects (Government, Biology, Economics, English, etc.):
+      Concept → Background → Why correct → Wrong options → Takeaway
+      (Formula + Steps sections are never rendered for theory)
+*/
 
-  .card-hover {
-    transition: transform var(--duration-base) var(--ease-out),
-                box-shadow var(--duration-base) var(--ease-out);
-  }
-  .card-hover:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
-  }
+.exp-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  font-family: var(--font-nunito), Nunito, sans-serif;
 }
 
-@layer utilities {
-  .font-nunito  { font-family: var(--font-nunito), 'Nunito', sans-serif; }
-  .font-inter   { font-family: 'Inter', ui-sans-serif, sans-serif; }
-  .tabular-nums { font-variant-numeric: tabular-nums; }
-  .text-balance { text-wrap: balance; }
+/* ─ Verdict banner ─ */
+.exp-verdict {
+  padding: 12px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.01em;
+}
+.exp-verdict--correct { background: var(--green-lt); color: var(--green); }
+.exp-verdict--wrong   { background: var(--red-lt);   color: var(--red); }
+.exp-verdict--neutral { background: var(--amber-lt); color: var(--amber); }
+
+/* ─ Generic section wrapper ─ */
+.exp-section {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.exp-section:last-child { border-bottom: none; }
+
+/* ─ Concept line ─ */
+.exp-concept { background: #FAFAF9; }
+.exp-concept-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.6;
 }
 
-/* ── Nunito weight hierarchy ──────────────────────────────────
-   800 = page titles, hero
-   700 = section headings, question text, card titles
-   600 = options, important labels
-   500 = body, explanations
-   400 = captions, metadata
-   ─────────────────────────────────────────────────────────── */
-
-/* ── MathText & math rendering ──────────────────────────── */
-
-.math-text {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
+/* ─ Background / explanation prose ─ */
+.exp-body {
+  font-size: 15px;
   line-height: 1.85;
+  color: var(--ink-3);
 }
-.math-block { display: block; }
+.exp-background { color: var(--ink-3); }
 
-.math-para {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-  font-size: 16px;
+/* ─ Why correct (theory) — slightly elevated ─ */
+.exp-why-correct-theory {
+  background: #F8FAFF;
+}
+.exp-why-correct-body {
+  font-size: 15px;
+  line-height: 1.85;
   font-weight: 500;
-  line-height: 1.9;
-  margin: 0 0 12px 0;
-  color: #1A1A1A;
+  color: var(--ink-3);
 }
-.math-para:last-child { margin-bottom: 0; }
 
-/* Inline math */
-.katex { font-size: 1.05em; }
-
-/* Display math — centred, breathing room */
-.katex-display {
-  margin: 16px 0;
+/* ─ Formula (calculation only) ─ */
+.exp-formula { background: #F8FAFF; }
+.exp-formula-box {
+  background: #EFF3FF;
+  border: 1px solid #C7D2FE;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  font-size: 16px;
   overflow-x: auto;
-  overflow-y: hidden;
-  text-align: center;
-  padding: 12px 0;
+}
+.exp-param-list { list-style: none; padding: 0; margin: 0; }
+.exp-param-item {
+  font-size: 14px;
+  color: #374151;
+  padding: 3px 0;
+  line-height: 1.7;
 }
 
-/* Bullet lists in explanations */
-.math-bullet-list {
+/* ─ Steps (calculation only) — no emoji icon ─ */
+.exp-steps-section { background: #FAFAF9; }
+.exp-steps-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 16px;
+}
+.exp-steps-list {
   list-style: none;
   padding: 0;
-  margin: 8px 0 12px 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-.explanation-card .math-bullet-list {
   gap: 12px;
-  margin: 10px 0;
 }
-.math-para + .math-bullet-list { margin-top: 14px; }
-
-.math-bullet {
+.exp-step-item {
   display: flex;
+  gap: 14px;
   align-items: flex-start;
-  gap: 10px;
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.75;
-  padding: 2px 0;
 }
-.math-bullet::before {
-  content: "▸";
-  color: #2D3CE6;
+.exp-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cta);
+  color: #fff;
+  font-size: 11px;
   font-weight: 800;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   margin-top: 3px;
 }
-
-/* Bold */
-.math-text strong,
-.math-para strong,
-.explanation-card strong {
-  font-weight: 800;
-  color: #1A1A1A;
-}
-
-/* KaTeX — never inherit Nunito */
-.katex, .katex * {
-  font-family: KaTeX_Main, KaTeX_Math, KaTeX_Caligraphic,
-               KaTeX_AMS, KaTeX_Typewriter, serif !important;
-}
-
-/* Step content — equations left-aligned, one per line */
-.step-content .katex-display {
-  text-align: left;
-  margin: 6px 0;
-  padding: 0;
-}
-.step-content .math-para {
-  font-size: 16px;
-  line-height: 2;
-}
-
-/* ── ExplanationCard ─────────────────────────────────── */
-
-.explanation-card {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-  font-size: 17px;
-  line-height: 1.85;
-  color: #1A1A1A;
-  background: #FFFFFF;
-  border-radius: 16px;
-  border: 1px solid #E2E8F0;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.verdict-banner {
-  padding: 14px 24px;
-  font-weight: 700;
+.exp-step-body {
+  flex: 1;
   font-size: 15px;
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
+  line-height: 1.85;
+  color: var(--ink-3);
 }
-.verdict-banner.correct { background: #EAF5EC; color: #166534; border-bottom: 1px solid #BBF7D0; }
-.verdict-banner.wrong   { background: #FEF2F2; color: #991B1B; border-bottom: 1px solid #FECACA; }
-.verdict-banner.neutral { background: #F8FAFC; color: #64748B; border-bottom: 1px solid #E2E8F0; }
 
-.explanation-section {
-  display: flex;
-  gap: 14px;
-  padding: 20px 24px;
-  border-bottom: 1px solid #F1F5F9;
-}
-.section-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; line-height: 1; }
-.section-label {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
+/* ─ Wrong options ─ */
+.exp-wrong-section { padding: 18px 22px; border-bottom: 1px solid var(--border); }
+.exp-wrong-label {
+  font-size: 11px;
   font-weight: 700;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 14px;
+}
+.exp-wrong-grid { display: flex; flex-direction: column; gap: 10px; }
+.exp-wrong-card {
+  background: #FFF5F5;
+  border: 1px solid #FECACA;
+  border-radius: 9px;
+  padding: 11px 14px;
+}
+.exp-wrong-letter {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 5px;
+}
+.exp-wrong-reason {
   font-size: 14px;
   color: #374151;
-}
-
-.concept-label {
-  font-weight: 700;
-  font-size: 16px;
-  color: #2D3CE6;
+  line-height: 1.68;
   margin: 0;
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
 }
 
-.background-section .section-content {
-  color: #374151;
-  background: #F8F9FA;
-  border-radius: 10px;
-  padding: 14px 16px;
-  flex: 1;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.9;
-}
-
-/* Formula section */
-.formula-section { background: #F0F4FF; border-left: 3px solid #2D3CE6; }
-.formula-content { flex: 1; }
-.formula-display {
-  font-size: 20px; font-weight: 700; text-align: center;
-  padding: 16px; background: white; border-radius: 10px;
-  margin-bottom: 12px; border: 1px solid #C7D2FE; overflow-x: auto;
-}
-.parameter-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.parameter-item {
-  display: flex; align-items: baseline; gap: 8px;
-  font-size: 15px; color: #374151; padding: 5px 0;
-  border-bottom: 1px solid #E0E7FF;
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-}
-.parameter-item::before { content: "•"; color: #2D3CE6; font-weight: 800; flex-shrink: 0; }
-
-/* Steps */
-.steps-list { list-style: none; padding: 0; margin: 0; flex: 1; display: flex; flex-direction: column; gap: 16px; }
-.step-item  { display: flex; gap: 14px; align-items: flex-start; }
-.step-number {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: #2D3CE6; color: white;
-  font-weight: 800; font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 2px;
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-}
-.step-content { flex: 1; padding-top: 4px; font-size: 16px; font-weight: 500; line-height: 1.9; }
-
-.why-correct-section { background: #F0FDF4; }
-
-/* Wrong options — individual cards */
-.why-wrong-section {
-  border-bottom: 1px solid #F1F5F9;
-}
-.why-wrong-header {
+/* ─ Takeaway ─ */
+.exp-takeaway {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 18px 24px 12px;
+  gap: 11px;
+  padding: 14px 22px;
+  background: var(--accent-lt);
+  align-items: flex-start;
 }
-.wrong-options-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 24px 20px;
+.exp-takeaway-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.exp-takeaway-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #78350F;
+  line-height: 1.65;
 }
-.wrong-option-card {
-  background: #FFF7F7;
-  border: 1px solid #FECACA;
-  border-left: 3px solid #DC2626;
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-.wrong-option-letter {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  color: #DC2626;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.wrong-option-reason {
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
+
+/* ─ Fallback (unstructured text) ─ */
+.exp-fallback {
+  padding: 20px 22px;
   font-size: 15px;
-  font-weight: 500;
-  color: #374151;
-  line-height: 1.7;
-  margin: 0;
+  line-height: 1.85;
+  color: var(--ink-3);
 }
 
-.takeaway-strip {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 18px 24px; background: #EEF2FF; border-top: 2px solid #2D3CE6;
-}
-.takeaway-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
-.takeaway-text {
-  font-weight: 800; font-size: 16px; color: #1E2A8A; line-height: 1.6;
-  font-family: var(--font-nunito), 'Nunito', sans-serif;
+/* ─ Mobile: icon above content, full-width text ─ */
+@media (max-width: 540px) {
+  /* Tighter horizontal padding so text has more room */
+  .exp-section,
+  .exp-steps-section,
+  .exp-wrong-section,
+  .exp-takeaway {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Step items: number circle stacks above step text */
+  .exp-step-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .exp-step-num {
+    margin-top: 0;
+  }
+  .exp-step-body {
+    font-size: 14px;
+    width: 100%;
+  }
+
+  /* Takeaway strip: icon above text, full width for text */
+  .exp-takeaway {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .exp-takeaway-icon {
+    margin-top: 0;
+  }
+  .exp-takeaway-text {
+    font-size: 14px;
+    width: 100%;
+  }
+
+  /* Slight font-size reduction for readability on small screens */
+  .exp-concept-text,
+  .exp-body,
+  .exp-why-correct-body {
+    font-size: 14px;
+  }
+  .exp-wrong-reason { font-size: 13px; }
 }
 
-/* Smooth expand */
-.explanation-expand { overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0.0,0.2,1), opacity 0.25s ease; }
-.explanation-expand.closed { max-height: 0; opacity: 0; }
-.explanation-expand.open   { max-height: 3000px; opacity: 1; }
-
-/* Diagram */
-.diagram-svg { width: 100%; max-width: 300px; margin: 16px auto; display: block; }
-.diagram-label { font-family: var(--font-nunito), 'Nunito', sans-serif; font-size: 13px; font-weight: 700; fill: #1A1A1A; }
-.diagram-placeholder {
-  display: flex; align-items: center; gap: 10px;
-  background: #F8F9FA; border: 1.5px dashed #CBD5E1; border-radius: 10px;
-  padding: 14px 16px; margin: 12px 0;
+/* ── Brand button ─────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--cta); color: #fff;
+  font-weight: 800; font-size: 15px;
+  padding: 13px 26px; border-radius: 10px;
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 12px rgba(27, 79, 216, 0.22);
 }
-.diagram-note { font-family: var(--font-nunito), 'Nunito', sans-serif; font-size: 14px; font-weight: 500; color: #64748B; margin: 0; line-height: 1.5; font-style: italic; }
-
-/* ── Exam availability badges (landing page) ─────────────── */
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(109,199,122,0.3); }
-  50%       { box-shadow: 0 0 0 5px rgba(109,199,122,0.1); }
+.btn-primary:hover {
+  background: var(--blue-dk);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(27, 79, 216, 0.3);
 }

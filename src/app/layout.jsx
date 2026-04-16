@@ -1,7 +1,8 @@
-import { Nunito } from 'next/font/google'
+import { Nunito, DM_Sans } from 'next/font/google'
 import './globals.css'
 import 'katex/dist/katex.min.css'
 
+// Body/UI font: Nunito — warm, friendly, legible at all sizes
 const nunito = Nunito({
   subsets:  ['latin'],
   weight:   ['400','500','600','700','800','900'],
@@ -9,14 +10,23 @@ const nunito = Nunito({
   variable: '--font-nunito',
 })
 
+// Headline font: DM Sans — confident, editorial, used by education platforms
+// Clean without being cold; serious without being corporate
+const dmSans = DM_Sans({
+  subsets:  ['latin'],
+  weight:   ['400','500','600','700','800'],
+  display:  'swap',
+  variable: '--font-display',
+})
+
 export const metadata = {
-  title:       'Learniie Exam Prep — Know Exactly Where You Stand',
-  description: 'Take 40 past questions. Get a personalised topic-by-topic breakdown. Free, instant, no sign-up.',
+  title:       'ExamReady — Practice Past Questions & Ace Your Exams',
+  description: 'Practice real past exam questions, get step-by-step explanations, and know exactly which topics to study. Exam prep for JAMB, WAEC, BECE and beyond — no sign-up needed.',
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={nunito.variable}>
+    <html lang="en" className={`${nunito.variable} ${dmSans.variable}`}>
       <body>{children}</body>
     </html>
   )

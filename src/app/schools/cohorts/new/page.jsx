@@ -59,10 +59,10 @@ export default function NewCohortPage() {
             <h2 style={{ fontWeight: 900, fontSize: 22, color: '#0A0A0A', marginBottom: 8 }}>Cohort created!</h2>
             <p style={{ fontSize: 14, color: '#64748B', marginBottom: 24 }}>Share this link with your students:</p>
             <div style={{ background: '#EEF0FE', borderRadius: 10, padding: '14px 16px', marginBottom: 20 }}>
-              <code style={{ fontSize: 14, fontWeight: 700, color: '#2D3CE6', wordBreak: 'break-all' }}>{created.access_url}</code>
+              <code style={{ fontSize: 14, fontWeight: 700, color: '#2D3CE6', wordBreak: 'break-all' }}>{`${window.location.origin}/join/${created.access_code || created.cohort?.access_code}`}</code>
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-              <button onClick={() => navigator.clipboard.writeText(created.access_url)}
+              <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join/${created.access_code || created.cohort?.access_code}`)}
                 style={{ fontSize: 13, fontWeight: 700, padding: '10px 20px', border: '1.5px solid #2D3CE6', borderRadius: 9, background: '#fff', color: '#2D3CE6', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
                 Copy link
               </button>
